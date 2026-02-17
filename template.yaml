@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: TechQuarter Corporate Booking Tool
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: java21
+    MemorySize: 512
+    Environment:
+      Variables:
+        DYNAMODB_TABLE_NAME: !Ref BookingsTable
+        REPOSITORY_TYPE: DYNAMODB
+
+Resources:
+  # DynamoDB Table
+  BookingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: techquarter-bookings
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: bookingReferenceId
+          AttributeType: S
+        - AttributeName: employeeId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: bookingReferenceId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: employeeId-index
+          KeySchema:
+            - AttributeName: employeeId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  # Lambda Function
+  BookingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: techquarter-booking-handler
+      CodeUri: .
+      Handler: booking.handler.BookingHandler::handleRequest
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref BookingsTable
+      Events:
+        CreateBooking:
+          Type: Api
+          Properties:
+            Path: /bookings
+            Method: POST
+        GetBookings:
+          Type: Api
+          Properties:
+            Path: /bookings
+            Method: GET
+        GetBookingById:
+          Type: Api
+          Properties:
+            Path: /bookings/{id}
+            Method: GET
+
+Outputs:
+  ApiEndpoint:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/bookings"
+  BookingsTableName:
+    Description: DynamoDB table name
+    Value: !Ref BookingsTable
