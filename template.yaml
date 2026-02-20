@@ -10,10 +10,13 @@ Globals:
     Environment:
       Variables:
         DYNAMODB_TABLE_NAME: !Ref BookingsTable
+        EMPLOYEES_TABLE_NAME: !Ref EmployeesTable
         REPOSITORY_TYPE: DYNAMODB
 
 Resources:
-  # DynamoDB Table
+
+  # ==================== DynamoDB Tables ====================
+
   BookingsTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -35,13 +38,35 @@ Resources:
           Projection:
             ProjectionType: ALL
 
-  # Lambda Function
+  EmployeesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: techquarter-employees
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: employeeId
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: employeeId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: email-index
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  # ==================== Lambda Functions ====================
+
   BookingFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: techquarter-booking-handler
       CodeUri: .
-      Handler: booking.handler.CreateBookingHandler::handleRequest
+      Handler: booking.handler.BookingHandler::handleRequest
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref BookingsTable
@@ -61,11 +86,58 @@ Resources:
           Properties:
             Path: /bookings/{id}
             Method: GET
+        UpdateBookingStatus:
+          Type: Api
+          Properties:
+            Path: /bookings/{id}/status
+            Method: PATCH
+
+  EmployeeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: techquarter-employee-handler
+      CodeUri: .
+      Handler: booking.handler.EmployeeHandler::handleRequest
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EmployeesTable
+      Events:
+        RegisterEmployee:
+          Type: Api
+          Properties:
+            Path: /employees
+            Method: POST
+        GetEmployees:
+          Type: Api
+          Properties:
+            Path: /employees
+            Method: GET
+        GetEmployeeById:
+          Type: Api
+          Properties:
+            Path: /employees/{id}
+            Method: GET
+        UpdateEmployeeStatus:
+          Type: Api
+          Properties:
+            Path: /employees/{id}/status
+            Method: PATCH
+        DeleteEmployee:
+          Type: Api
+          Properties:
+            Path: /employees/{id}
+            Method: DELETE
 
 Outputs:
-  ApiEndpoint:
-    Description: API Gateway endpoint URL
+  BookingApiEndpoint:
+    Description: API Gateway endpoint URL for bookings
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/bookings"
+  EmployeeApiEndpoint:
+    Description: API Gateway endpoint URL for employees
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/employees"
   BookingsTableName:
-    Description: DynamoDB table name
+    Description: DynamoDB Bookings table name
     Value: !Ref BookingsTable
+  EmployeesTableName:
+    Description: DynamoDB Employees table name
+    Value: !Ref EmployeesTable
