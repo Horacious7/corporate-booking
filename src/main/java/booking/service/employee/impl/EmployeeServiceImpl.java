@@ -94,11 +94,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
             logger.info("Employee registered successfully: {}", savedEmployee.getEmployeeId());
 
-            return EmployeeResponse.builder()
-                    .status(STATUS_SUCCESS)
-                    .employeeId(savedEmployee.getEmployeeId())
-                    .message("Employee registered successfully")
-                    .build();
+            return buildSuccessResponse(savedEmployee, "Employee registered successfully");
 
         } catch (IllegalArgumentException e) {
             logger.error("Validation error in employee request: {}", e.getMessage());
@@ -134,11 +130,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             Employee employee = employeeOpt.get();
             logger.info("Found employee: {}", employeeId);
 
-            return EmployeeResponse.builder()
-                    .status(STATUS_SUCCESS)
-                    .employeeId(employee.getEmployeeId())
-                    .message("Employee found: " + employee.getName())
-                    .build();
+            return buildSuccessResponse(employee, "Employee found: " + employee.getName());
 
         } catch (EmployeePersistenceException e) {
             logger.error("Failed to retrieve employee: {}", employeeId, e);
@@ -159,11 +151,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             List<Employee> employees = employeeRepository.findByEmail(email);
 
             return employees.stream()
-                    .map(emp -> EmployeeResponse.builder()
-                            .status(STATUS_SUCCESS)
-                            .employeeId(emp.getEmployeeId())
-                            .message("Employee: " + emp.getName() + " (" + emp.getDepartment() + ")")
-                            .build())
+                    .map(emp -> buildSuccessResponse(emp, "Employee: " + emp.getName() + " (" + emp.getDepartment() + ")"))
                     .collect(Collectors.toList());
 
         } catch (EmployeePersistenceException e) {
@@ -181,11 +169,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             List<Employee> employees = employeeRepository.findByDepartment(department);
 
             return employees.stream()
-                    .map(emp -> EmployeeResponse.builder()
-                            .status(STATUS_SUCCESS)
-                            .employeeId(emp.getEmployeeId())
-                            .message("Employee: " + emp.getName() + " (" + emp.getEmail() + ")")
-                            .build())
+                    .map(emp -> buildSuccessResponse(emp, "Employee: " + emp.getName() + " (" + emp.getEmail() + ")"))
                     .collect(Collectors.toList());
 
         } catch (EmployeePersistenceException e) {
@@ -224,11 +208,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             Employee updated = updatedOpt.get();
             logger.info("Successfully updated employee {} status to {}", employeeId, newStatus);
 
-            return EmployeeResponse.builder()
-                    .status(STATUS_SUCCESS)
-                    .employeeId(updated.getEmployeeId())
-                    .message("Employee status updated to " + updated.getStatus())
-                    .build();
+            return buildSuccessResponse(updated, "Employee status updated to " + updated.getStatus());
 
         } catch (EmployeePersistenceException e) {
             logger.error("Failed to update employee status: {}", employeeId, e);
@@ -276,7 +256,41 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
     }
 
+    @Override
+    public List<EmployeeResponse> getAllEmployees() {
+        logger.info("Retrieving all employees");
+
+        try {
+            List<Employee> employees = employeeRepository.findAll();
+
+            return employees.stream()
+                    .map(emp -> buildSuccessResponse(emp, "Employee: " + emp.getName()))
+                    .collect(Collectors.toList());
+
+        } catch (EmployeePersistenceException e) {
+            logger.error("Failed to retrieve all employees", e);
+            return List.of(buildErrorResponse(STATUS_SYSTEM_ERROR, null,
+                    "Failed to retrieve employees. Please try again later."));
+        }
+    }
+
     // ==================== Private Helper Methods ====================
+
+    /**
+     * Builds a full success response from an Employee entity.
+     */
+    private EmployeeResponse buildSuccessResponse(Employee employee, String message) {
+        return EmployeeResponse.builder()
+                .status(STATUS_SUCCESS)
+                .employeeId(employee.getEmployeeId())
+                .name(employee.getName())
+                .email(employee.getEmail())
+                .department(employee.getDepartment())
+                .costCenterRef(employee.getCostCenterRef())
+                .employeeStatus(employee.getStatus())
+                .message(message)
+                .build();
+    }
 
     /**
      * Validates that all required fields in the employee request are present and valid.

@@ -70,4 +70,11 @@ public interface EmployeeService {
      * @return Response indicating success or failure
      */
     EmployeeResponse deleteEmployee(String employeeId);
+
+    /**
+     * Retrieves all employees in the system.
+     *
+     * @return List of all employee responses
+     */
+    List<EmployeeResponse> getAllEmployees();
 }

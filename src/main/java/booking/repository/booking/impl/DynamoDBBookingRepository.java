@@ -15,6 +15,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.regions.Region;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -73,9 +74,20 @@ public class DynamoDBBookingRepository implements BookingRepository {
 
         // Create DynamoDB client with region from environment or default
         String region = System.getenv().getOrDefault("AWS_REGION", "eu-central-1");
-        DynamoDbClient dynamoDbClient = DynamoDbClient.builder()
-                .region(Region.of(region))
-                .build();
+        String endpoint = System.getenv("DYNAMODB_ENDPOINT");
+
+        DynamoDbClient dynamoDbClient;
+        if (endpoint != null && !endpoint.isEmpty()) {
+            dynamoDbClient = DynamoDbClient.builder()
+                    .region(Region.of(region))
+                    .endpointOverride(URI.create(endpoint))
+                    .build();
+            logger.info("Using custom DynamoDB endpoint: {}", endpoint);
+        } else {
+            dynamoDbClient = DynamoDbClient.builder()
+                    .region(Region.of(region))
+                    .build();
+        }
 
         this.enhancedClient = DynamoDbEnhancedClient.builder()
                 .dynamoDbClient(dynamoDbClient)

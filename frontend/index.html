@@ -88,9 +88,24 @@
                     <div class="search-section">
                         <h3>🏢 By Department</h3>
                         <div class="inline-form">
-                            <input type="text" id="searchEmpDept" placeholder="Department name...">
+                            <select id="searchEmpDept">
+                                <option value="">Select department...</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Sales">Sales</option>
+                                <option value="HR">HR</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Management">Management</option>
+                            </select>
                             <button class="btn btn-secondary" onclick="searchEmployeesByDepartment()">Search</button>
                         </div>
+                    </div>
+
+                    <!-- List All -->
+                    <div class="search-section">
+                        <h3>📋 All Employees</h3>
+                        <button class="btn btn-secondary" onclick="listAllEmployees()">List All</button>
                     </div>
 
                     <div id="searchEmployeeResult" class="result-box"></div>

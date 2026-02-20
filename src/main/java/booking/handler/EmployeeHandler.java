@@ -74,12 +74,12 @@ public class EmployeeHandler implements RequestHandler<APIGatewayProxyRequestEve
                 case "PATCH" -> handleUpdateStatus(request);
                 case "DELETE" -> handleDeleteEmployee(request);
                 default -> buildJsonResponse(HTTP_METHOD_NOT_ALLOWED,
-                        new EmployeeResponse("METHOD_NOT_ALLOWED", null, "Method not allowed: " + httpMethod));
+                        EmployeeResponse.builder().status("METHOD_NOT_ALLOWED").message("Method not allowed: " + httpMethod).build());
             };
         } catch (Exception e) {
             logger.error("Unexpected error in EmployeeHandler", e);
             return buildJsonResponse(HTTP_INTERNAL_SERVER_ERROR,
-                    new EmployeeResponse("SYSTEM_ERROR", null, "An unexpected error occurred"));
+                    EmployeeResponse.builder().status("SYSTEM_ERROR").message("An unexpected error occurred").build());
         }
     }
 
@@ -96,7 +96,7 @@ public class EmployeeHandler implements RequestHandler<APIGatewayProxyRequestEve
         } catch (InvalidRequestException e) {
             logger.warn("Invalid request format: {}", e.getMessage());
             return buildJsonResponse(HTTP_BAD_REQUEST,
-                    new EmployeeResponse("INVALID_REQUEST", null, e.getMessage()));
+                    EmployeeResponse.builder().status("INVALID_REQUEST").message(e.getMessage()).build());
         }
     }
 
@@ -127,10 +127,9 @@ public class EmployeeHandler implements RequestHandler<APIGatewayProxyRequestEve
             }
         }
 
-        // No params → return a hint
-        return buildJsonResponse(HTTP_BAD_REQUEST,
-                new EmployeeResponse("VALIDATION_ERROR", null,
-                        "Provide an employee ID in path or email/department as query parameter"));
+        // No params → list all employees
+        List<EmployeeResponse> allEmployees = employeeService.getAllEmployees();
+        return buildJsonListResponse(HTTP_OK, allEmployees);
     }
 
     // ==================== PATCH /employees/{id}/status ====================
@@ -140,7 +139,7 @@ public class EmployeeHandler implements RequestHandler<APIGatewayProxyRequestEve
             Map<String, String> pathParams = request.getPathParameters();
             if (pathParams == null || !pathParams.containsKey("id")) {
                 return buildJsonResponse(HTTP_BAD_REQUEST,
-                        new EmployeeResponse("VALIDATION_ERROR", null, "Employee ID is required in path"));
+                        EmployeeResponse.builder().status("VALIDATION_ERROR").message("Employee ID is required in path").build());
             }
 
             String employeeId = pathParams.get("id");
@@ -152,7 +151,7 @@ public class EmployeeHandler implements RequestHandler<APIGatewayProxyRequestEve
 
             if (newStatus == null || newStatus.isBlank()) {
                 return buildJsonResponse(HTTP_BAD_REQUEST,
-                        new EmployeeResponse("VALIDATION_ERROR", employeeId, "Status field is required in body"));
+                        EmployeeResponse.builder().status("VALIDATION_ERROR").employeeId(employeeId).message("Status field is required in body").build());
             }
 
             EmployeeResponse response = employeeService.updateEmployeeStatus(employeeId, newStatus);
@@ -163,7 +162,7 @@ public class EmployeeHandler implements RequestHandler<APIGatewayProxyRequestEve
         } catch (InvalidRequestException e) {
             logger.warn("Invalid request format: {}", e.getMessage());
             return buildJsonResponse(HTTP_BAD_REQUEST,
-                    new EmployeeResponse("INVALID_REQUEST", null, e.getMessage()));
+                    EmployeeResponse.builder().status("INVALID_REQUEST").message(e.getMessage()).build());
         }
     }
 
@@ -173,7 +172,7 @@ public class EmployeeHandler implements RequestHandler<APIGatewayProxyRequestEve
         Map<String, String> pathParams = request.getPathParameters();
         if (pathParams == null || !pathParams.containsKey("id")) {
             return buildJsonResponse(HTTP_BAD_REQUEST,
-                    new EmployeeResponse("VALIDATION_ERROR", null, "Employee ID is required in path"));
+                    EmployeeResponse.builder().status("VALIDATION_ERROR").message("Employee ID is required in path").build());
         }
 
         String employeeId = pathParams.get("id");

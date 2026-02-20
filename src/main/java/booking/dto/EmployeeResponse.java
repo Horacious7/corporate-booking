@@ -25,4 +25,19 @@ public class EmployeeResponse implements Serializable {
     @JsonProperty("message")
     private String message;
 
+    @JsonProperty("name")
+    private String name;
+
+    @JsonProperty("email")
+    private String email;
+
+    @JsonProperty("department")
+    private String department;
+
+    @JsonProperty("costCenterRef")
+    private String costCenterRef;
+
+    @JsonProperty("employeeStatus")
+    private String employeeStatus;
+
 }

@@ -147,8 +147,8 @@ async function searchEmployeesByEmail() {
 
 // Search Employees by Department
 async function searchEmployeesByDepartment() {
-    const dept = document.getElementById('searchEmpDept').value.trim();
-    if (!dept) return showResult('searchEmployeeResult', 'error', '⚠️ Enter a department');
+    const dept = document.getElementById('searchEmpDept').value;
+    if (!dept) return showResult('searchEmployeeResult', 'error', '⚠️ Select a department');
 
     showResult('searchEmployeeResult', 'info', '<span class="loading"></span> Searching...');
 
@@ -160,6 +160,29 @@ async function searchEmployeesByDepartment() {
                 showResult('searchEmployeeResult', 'info', 'No employees found in that department.');
             } else {
                 showResult('searchEmployeeResult', 'success', data.map(formatEmployee).join(''));
+            }
+        } else {
+            showResult('searchEmployeeResult', 'error', `❌ ${data.status}: ${data.message}`);
+        }
+    } catch (err) {
+        showResult('searchEmployeeResult', 'error', `❌ Error: ${err.message}`);
+    }
+}
+
+// List All Employees
+async function listAllEmployees() {
+    showResult('searchEmployeeResult', 'info', '<span class="loading"></span> Loading all employees...');
+
+    try {
+        const data = await apiCall('GET', '/employees');
+
+        if (Array.isArray(data)) {
+            if (data.length === 0) {
+                showResult('searchEmployeeResult', 'info', 'No employees registered yet.');
+            } else {
+                const summary = data.map(formatEmployeeSummary).join('');
+                showResult('searchEmployeeResult', 'success',
+                    `<strong>Total: ${data.length} employee(s)</strong>${summary}`);
             }
         } else {
             showResult('searchEmployeeResult', 'error', `❌ ${data.status}: ${data.message}`);
@@ -218,12 +241,15 @@ async function deleteEmployee() {
 document.getElementById('createBookingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    const rawDeparture = document.getElementById('bookDeparture').value;
+    const rawReturn = document.getElementById('bookReturn').value;
+
     const payload = {
         employeeId: document.getElementById('bookEmpId').value.trim(),
         resourceType: document.getElementById('bookResourceType').value,
         destination: document.getElementById('bookDestination').value.trim(),
-        departureDate: document.getElementById('bookDeparture').value,
-        returnDate: document.getElementById('bookReturn').value,
+        departureDate: rawDeparture ? rawDeparture + ' 08:00:00' : '',
+        returnDate: rawReturn ? rawReturn + ' 18:00:00' : '',
         travelerCount: parseInt(document.getElementById('bookTravelers').value),
         costCenterRef: document.getElementById('bookCostCenter').value.trim(),
         tripPurpose: document.getElementById('bookPurpose').value.trim()
@@ -342,12 +368,35 @@ async function apiCall(method, path, body = null) {
 // ==================== Formatting Helpers ====================
 
 function formatEmployee(emp) {
-    const statusClass = emp.status === 'SUCCESS' ? 'success' : (emp.status === 'NOT_FOUND' ? 'error' : 'info');
+    if (emp.status !== 'SUCCESS') {
+        return `
+        <div class="result-item">
+            <span class="status-badge error">${emp.status}</span>
+            <br><span class="label">Message:</span> <span class="value">${emp.message || 'N/A'}</span>
+        </div>`;
+    }
+
+    const empStatusClass = emp.employeeStatus === 'ACTIVE' ? 'success' :
+                           emp.employeeStatus === 'INACTIVE' ? 'error' : 'info';
     return `
         <div class="result-item">
-            <span class="status-badge ${statusClass}">${emp.status}</span>
+            <span class="status-badge success">✓ ${emp.employeeStatus || 'N/A'}</span>
             <br><span class="label">Employee ID:</span> <span class="value">${emp.employeeId || 'N/A'}</span>
-            <br><span class="label">Details:</span> <span class="value">${emp.message || 'N/A'}</span>
+            <br><span class="label">Name:</span> <span class="value">${emp.name || 'N/A'}</span>
+            <br><span class="label">Email:</span> <span class="value">${emp.email || 'N/A'}</span>
+            <br><span class="label">Department:</span> <span class="value">${emp.department || 'N/A'}</span>
+            <br><span class="label">Cost Center:</span> <span class="value">${emp.costCenterRef || 'N/A'}</span>
+        </div>`;
+}
+
+function formatEmployeeSummary(emp) {
+    const empStatusClass = emp.employeeStatus === 'ACTIVE' ? 'success' :
+                           emp.employeeStatus === 'INACTIVE' ? 'error' : 'info';
+    return `
+        <div class="result-item" style="padding: 6px 10px;">
+            <span class="status-badge ${empStatusClass}" style="font-size:0.7em">${emp.employeeStatus || '?'}</span>
+            <strong>${emp.employeeId}</strong> — ${emp.name || 'N/A'}
+            <span style="color:#888; margin-left:8px;">${emp.department || ''}</span>
         </div>`;
 }
 

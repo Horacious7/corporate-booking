@@ -245,14 +245,18 @@ class EmployeeHandlerTest {
         }
 
         @Test
-        @DisplayName("Should return 400 when no query params provided")
-        void shouldReturn400WhenNoParams() {
+        @DisplayName("Should return 200 with employee list when no query params (list all)")
+        void shouldReturnAllEmployeesWhenNoParams() throws Exception {
+            registerEmployee();
+
             APIGatewayProxyRequestEvent request = buildRequest("GET", null);
             request.setPath("/employees");
 
             APIGatewayProxyResponseEvent response = handler.handleRequest(request, mockContext);
 
-            assertEquals(400, response.getStatusCode());
+            assertEquals(200, response.getStatusCode());
+            List<?> list = objectMapper.readValue(response.getBody(), List.class);
+            assertEquals(1, list.size());
         }
     }
 
