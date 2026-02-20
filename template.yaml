@@ -2,16 +2,41 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: TechQuarter Corporate Booking Tool
 
+# ==================== Parameters ====================
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment
+  LogRetentionDays:
+    Type: Number
+    Default: 14
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90]
+    Description: CloudWatch log retention in days
+
 Globals:
   Function:
     Timeout: 30
     Runtime: java21
     MemorySize: 512
+    Architectures:
+      - x86_64
     Environment:
       Variables:
         DYNAMODB_TABLE_NAME: !Ref BookingsTable
         EMPLOYEES_TABLE_NAME: !Ref EmployeesTable
         REPOSITORY_TYPE: DYNAMODB
+        JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+        ENVIRONMENT: !Ref Environment
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PATCH,DELETE,OPTIONS'"
+      AllowHeaders: "'Content-Type,Authorization'"
+      AllowOrigin: "'*'"
 
 Resources:
 
@@ -19,9 +44,13 @@ Resources:
 
   BookingsTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
-      TableName: techquarter-bookings
+      TableName: !Sub "techquarter-bookings-${Environment}"
       BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
       AttributeDefinitions:
         - AttributeName: bookingReferenceId
           AttributeType: S
@@ -37,12 +66,21 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
+      Tags:
+        - Key: Project
+          Value: TechQuarter-CorporateBooking
+        - Key: Environment
+          Value: !Ref Environment
 
   EmployeesTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
-      TableName: techquarter-employees
+      TableName: !Sub "techquarter-employees-${Environment}"
       BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
       AttributeDefinitions:
         - AttributeName: employeeId
           AttributeType: S
@@ -58,18 +96,29 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
+      Tags:
+        - Key: Project
+          Value: TechQuarter-CorporateBooking
+        - Key: Environment
+          Value: !Ref Environment
 
   # ==================== Lambda Functions ====================
 
   BookingFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: techquarter-booking-handler
+      FunctionName: !Sub "techquarter-booking-handler-${Environment}"
       CodeUri: .
       Handler: booking.handler.BookingHandler::handleRequest
+      SnapStart:
+        ApplyOn: PublishedVersions
+      AutoPublishAlias: live
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref BookingsTable
+      Tags:
+        Project: TechQuarter-CorporateBooking
+        Environment: !Ref Environment
       Events:
         CreateBooking:
           Type: Api
@@ -95,12 +144,18 @@ Resources:
   EmployeeFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: techquarter-employee-handler
+      FunctionName: !Sub "techquarter-employee-handler-${Environment}"
       CodeUri: .
       Handler: booking.handler.EmployeeHandler::handleRequest
+      SnapStart:
+        ApplyOn: PublishedVersions
+      AutoPublishAlias: live
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref EmployeesTable
+      Tags:
+        Project: TechQuarter-CorporateBooking
+        Environment: !Ref Environment
       Events:
         RegisterEmployee:
           Type: Api
@@ -128,7 +183,110 @@ Resources:
             Path: /employees/{id}
             Method: DELETE
 
+  # ==================== CloudWatch Log Groups ====================
+
+  BookingFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/techquarter-booking-handler-${Environment}"
+      RetentionInDays: !Ref LogRetentionDays
+
+  EmployeeFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/techquarter-employee-handler-${Environment}"
+      RetentionInDays: !Ref LogRetentionDays
+
+  # ==================== S3 Frontend Hosting ====================
+
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "techquarter-booking-frontend-${Environment}-${AWS::AccountId}"
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ["*"]
+            AllowedMethods: [GET]
+            AllowedOrigins: ["*"]
+            MaxAge: 3600
+      Tags:
+        - Key: Project
+          Value: TechQuarter-CorporateBooking
+        - Key: Environment
+          Value: !Ref Environment
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AllowCloudFrontAccess
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: s3:GetObject
+            Resource: !Sub "${FrontendBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                AWS:SourceArn: !Sub "arn:aws:cloudfront::${AWS::AccountId}:distribution/${FrontendDistribution}"
+
+  FrontendOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "techquarter-frontend-oac-${Environment}"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  FrontendDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            OriginAccessControlId: !Ref FrontendOriginAccessControl
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          ForwardedValues:
+            QueryString: false
+            Cookies:
+              Forward: none
+          Compress: true
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+        PriceClass: PriceClass_100
+      Tags:
+        - Key: Project
+          Value: TechQuarter-CorporateBooking
+        - Key: Environment
+          Value: !Ref Environment
+
+# ==================== Outputs ====================
+
 Outputs:
+  ApiBaseUrl:
+    Description: API Gateway base URL
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod"
   BookingApiEndpoint:
     Description: API Gateway endpoint URL for bookings
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/bookings"
@@ -141,3 +299,15 @@ Outputs:
   EmployeesTableName:
     Description: DynamoDB Employees table name
     Value: !Ref EmployeesTable
+  FrontendBucketName:
+    Description: S3 bucket for frontend hosting
+    Value: !Ref FrontendBucket
+  FrontendUrl:
+    Description: CloudFront URL for the frontend
+    Value: !Sub "https://${FrontendDistribution.DomainName}"
+  BookingFunctionArn:
+    Description: Booking Lambda function ARN
+    Value: !GetAtt BookingFunction.Arn
+  EmployeeFunctionArn:
+    Description: Employee Lambda function ARN
+    Value: !GetAtt EmployeeFunction.Arn

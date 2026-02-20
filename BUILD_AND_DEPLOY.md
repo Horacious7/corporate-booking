@@ -376,10 +376,42 @@ aws s3 rb s3://techquarter-booking-service-artifacts-123456789012 --force
 
 ## Next Steps
 
-1. Add DynamoDB for booking persistence
+1. ~~Add DynamoDB for booking persistence~~ ✅ Done
 2. Implement authentication with API Gateway authorizers
 3. Set up CloudWatch alarms for errors and latency
 4. Create monitoring dashboard
 5. Add API rate limiting
-6. Implement booking search and cancellation endpoints
+6. ~~Implement booking search and cancellation endpoints~~ ✅ Done
+
+## Frontend Deployment
+
+### Local Testing
+
+Open `frontend/index.html` in your browser, go to **Settings** tab, click **"Use Local (SAM Local)"**.
+
+### Deploy to S3 + CloudFront
+
+After `sam deploy`, use the outputs to deploy the frontend:
+
+```bash
+# Get the bucket name from SAM outputs
+BUCKET_NAME=$(aws cloudformation describe-stacks \
+  --stack-name techquarter-booking-service-stack \
+  --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" \
+  --output text)
+
+# Sync frontend files to S3
+aws s3 sync frontend/ s3://$BUCKET_NAME --delete
+
+# Get CloudFront distribution ID
+DIST_ID=$(aws cloudformation describe-stacks \
+  --stack-name techquarter-booking-service-stack \
+  --query "Stacks[0].Outputs[?OutputKey=='FrontendUrl'].OutputValue" \
+  --output text)
+
+# Invalidate CloudFront cache
+aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
+```
+
+The frontend will be available at the CloudFront URL shown in the stack outputs.
 

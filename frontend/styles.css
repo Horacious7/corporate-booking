@@ -1,0 +1,399 @@
+/* ==================== CSS Variables & Reset ==================== */
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary: #64748b;
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ==================== Header ==================== */
+header {
+    background: linear-gradient(135deg, var(--primary), #7c3aed);
+    color: white;
+    padding: 1.5rem 2rem;
+    text-align: center;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+header .subtitle {
+    font-size: 0.95rem;
+    opacity: 0.85;
+    margin-top: 0.25rem;
+}
+
+/* ==================== Navigation ==================== */
+nav {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.nav-btn {
+    padding: 0.6rem 1.5rem;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background: #e2e8f0;
+}
+
+.nav-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* ==================== Main Content ==================== */
+main {
+    flex: 1;
+    padding: 1.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.section-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 1.5rem;
+}
+
+/* ==================== Cards ==================== */
+.card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.card h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary);
+    color: var(--primary);
+}
+
+.card h3 {
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+}
+
+/* ==================== Forms ==================== */
+.form-group {
+    margin-bottom: 0.85rem;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--text-light);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+    background: #fafafa;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    background: white;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.inline-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.inline-form input {
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.inline-form input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.search-section {
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.search-section:last-of-type {
+    border-bottom: none;
+}
+
+/* ==================== Buttons ==================== */
+.btn {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    box-shadow: var(--shadow);
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: var(--text);
+}
+
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #b45309;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+.btn-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ==================== Result Box ==================== */
+.result-box {
+    margin-top: 1rem;
+    padding: 0;
+    max-height: 400px;
+    overflow-y: auto;
+    transition: all 0.3s;
+}
+
+.result-box:not(:empty) {
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+}
+
+.result-box.success {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.result-box.error {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.result-box.info {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.result-item {
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 0.88rem;
+}
+
+.result-item:last-child {
+    margin-bottom: 0;
+}
+
+.result-item .label {
+    font-weight: 600;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.result-item .value {
+    color: var(--text);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.status-badge.success { background: #dcfce7; color: #166534; }
+.status-badge.error { background: #fee2e2; color: #991b1b; }
+.status-badge.warning { background: #fef3c7; color: #92400e; }
+.status-badge.info { background: #dbeafe; color: #1e40af; }
+
+/* ==================== Hint Text ==================== */
+.hint {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.hint code {
+    background: #e2e8f0;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.82rem;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.5rem 0;
+}
+
+/* ==================== Loading Spinner ==================== */
+.loading {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e2e8f0;
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-right: 0.5rem;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==================== Footer ==================== */
+footer {
+    text-align: center;
+    padding: 1rem;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+    background: var(--card-bg);
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 768px) {
+    .section-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    nav {
+        flex-wrap: wrap;
+    }
+
+    header h1 {
+        font-size: 1.4rem;
+    }
+}
+

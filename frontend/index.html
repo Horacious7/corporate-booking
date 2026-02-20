@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechQuarter Corporate Booking</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🏢 TechQuarter Corporate Booking</h1>
+            <p class="subtitle">Enterprise Travel & Resource Management</p>
+        </div>
+    </header>
+
+    <nav>
+        <button class="nav-btn active" data-tab="employees">👤 Employees</button>
+        <button class="nav-btn" data-tab="bookings">✈️ Bookings</button>
+        <button class="nav-btn" data-tab="settings">⚙️ Settings</button>
+    </nav>
+
+    <main>
+        <!-- ==================== EMPLOYEES TAB ==================== -->
+        <section id="employees" class="tab-content active">
+            <div class="section-grid">
+                <!-- Register Employee -->
+                <div class="card">
+                    <h2>Register Employee</h2>
+                    <form id="registerEmployeeForm">
+                        <div class="form-group">
+                            <label for="empId">Employee ID</label>
+                            <input type="text" id="empId" placeholder="e.g. EMP-001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="empName">Full Name</label>
+                            <input type="text" id="empName" placeholder="e.g. Ion Popescu" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="empEmail">Email</label>
+                            <input type="email" id="empEmail" placeholder="e.g. ion@techquarter.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="empDepartment">Department</label>
+                            <select id="empDepartment" required>
+                                <option value="">Select department...</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Sales">Sales</option>
+                                <option value="HR">HR</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Management">Management</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="empCostCenter">Cost Center Ref</label>
+                            <input type="text" id="empCostCenter" placeholder="e.g. CC-ENG-01" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register Employee</button>
+                    </form>
+                    <div id="registerEmployeeResult" class="result-box"></div>
+                </div>
+
+                <!-- Search Employee -->
+                <div class="card">
+                    <h2>Search Employees</h2>
+
+                    <!-- By ID -->
+                    <div class="search-section">
+                        <h3>🔍 By Employee ID</h3>
+                        <div class="inline-form">
+                            <input type="text" id="searchEmpId" placeholder="Employee ID...">
+                            <button class="btn btn-secondary" onclick="searchEmployeeById()">Search</button>
+                        </div>
+                    </div>
+
+                    <!-- By Email -->
+                    <div class="search-section">
+                        <h3>📧 By Email</h3>
+                        <div class="inline-form">
+                            <input type="text" id="searchEmpEmail" placeholder="Email...">
+                            <button class="btn btn-secondary" onclick="searchEmployeesByEmail()">Search</button>
+                        </div>
+                    </div>
+
+                    <!-- By Department -->
+                    <div class="search-section">
+                        <h3>🏢 By Department</h3>
+                        <div class="inline-form">
+                            <input type="text" id="searchEmpDept" placeholder="Department name...">
+                            <button class="btn btn-secondary" onclick="searchEmployeesByDepartment()">Search</button>
+                        </div>
+                    </div>
+
+                    <div id="searchEmployeeResult" class="result-box"></div>
+                </div>
+
+                <!-- Update Status / Delete -->
+                <div class="card">
+                    <h2>Manage Employee</h2>
+
+                    <!-- Update Status -->
+                    <div class="search-section">
+                        <h3>🔄 Update Status</h3>
+                        <div class="form-group">
+                            <label for="statusEmpId">Employee ID</label>
+                            <input type="text" id="statusEmpId" placeholder="Employee ID...">
+                        </div>
+                        <div class="form-group">
+                            <label for="empNewStatus">New Status</label>
+                            <select id="empNewStatus">
+                                <option value="ACTIVE">ACTIVE</option>
+                                <option value="INACTIVE">INACTIVE</option>
+                                <option value="SUSPENDED">SUSPENDED</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-warning" onclick="updateEmployeeStatus()">Update Status</button>
+                    </div>
+
+                    <!-- Delete -->
+                    <div class="search-section">
+                        <h3>🗑️ Delete Employee</h3>
+                        <div class="inline-form">
+                            <input type="text" id="deleteEmpId" placeholder="Employee ID...">
+                            <button class="btn btn-danger" onclick="deleteEmployee()">Delete</button>
+                        </div>
+                    </div>
+
+                    <div id="manageEmployeeResult" class="result-box"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== BOOKINGS TAB ==================== -->
+        <section id="bookings" class="tab-content">
+            <div class="section-grid">
+                <!-- Create Booking -->
+                <div class="card">
+                    <h2>Create Booking</h2>
+                    <form id="createBookingForm">
+                        <div class="form-group">
+                            <label for="bookEmpId">Employee ID</label>
+                            <input type="text" id="bookEmpId" placeholder="e.g. EMP-001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookResourceType">Resource Type</label>
+                            <select id="bookResourceType" required>
+                                <option value="">Select type...</option>
+                                <option value="FLIGHT">Flight</option>
+                                <option value="HOTEL">Hotel</option>
+                                <option value="CAR_RENTAL">Car Rental</option>
+                                <option value="CONFERENCE_ROOM">Conference Room</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookDestination">Destination</label>
+                            <input type="text" id="bookDestination" placeholder="e.g. Cluj-Napoca" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bookDeparture">Departure Date</label>
+                                <input type="date" id="bookDeparture" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bookReturn">Return Date</label>
+                                <input type="date" id="bookReturn" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bookTravelers">Travelers</label>
+                                <input type="number" id="bookTravelers" min="1" max="20" value="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="bookCostCenter">Cost Center</label>
+                                <input type="text" id="bookCostCenter" placeholder="e.g. CC-ENG-01" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookPurpose">Trip Purpose</label>
+                            <textarea id="bookPurpose" rows="2" placeholder="e.g. Client meeting in Cluj" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Create Booking</button>
+                    </form>
+                    <div id="createBookingResult" class="result-box"></div>
+                </div>
+
+                <!-- Search Bookings -->
+                <div class="card">
+                    <h2>Search Bookings</h2>
+
+                    <!-- By Reference ID -->
+                    <div class="search-section">
+                        <h3>🔍 By Booking Reference</h3>
+                        <div class="inline-form">
+                            <input type="text" id="searchBookingRef" placeholder="Booking reference ID...">
+                            <button class="btn btn-secondary" onclick="searchBookingByRef()">Search</button>
+                        </div>
+                    </div>
+
+                    <!-- By Employee ID -->
+                    <div class="search-section">
+                        <h3>👤 By Employee ID</h3>
+                        <div class="inline-form">
+                            <input type="text" id="searchBookingEmpId" placeholder="Employee ID...">
+                            <button class="btn btn-secondary" onclick="searchBookingsByEmployee()">Search</button>
+                        </div>
+                    </div>
+
+                    <div id="searchBookingResult" class="result-box"></div>
+                </div>
+
+                <!-- Update Booking Status -->
+                <div class="card">
+                    <h2>Update Booking Status</h2>
+                    <div class="form-group">
+                        <label for="updateBookingRef">Booking Reference ID</label>
+                        <input type="text" id="updateBookingRef" placeholder="Booking reference ID...">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookNewStatus">New Status</label>
+                        <select id="bookNewStatus">
+                            <option value="CONFIRMED">CONFIRMED</option>
+                            <option value="CANCELLED">CANCELLED</option>
+                            <option value="COMPLETED">COMPLETED</option>
+                            <option value="PENDING">PENDING</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-warning" onclick="updateBookingStatus()">Update Status</button>
+                    <div id="updateBookingResult" class="result-box"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== SETTINGS TAB ==================== -->
+        <section id="settings" class="tab-content">
+            <div class="card" style="max-width: 600px;">
+                <h2>⚙️ API Configuration</h2>
+                <p class="hint">Set the API Gateway base URL. After deploying with SAM, copy the <code>ApiBaseUrl</code> output here.</p>
+                <div class="form-group">
+                    <label for="apiBaseUrl">API Base URL</label>
+                    <input type="text" id="apiBaseUrl" placeholder="https://xxxxxxxxxx.execute-api.eu-central-1.amazonaws.com/Prod">
+                </div>
+                <div class="btn-row">
+                    <button class="btn btn-primary" onclick="saveApiUrl()">💾 Save</button>
+                    <button class="btn btn-secondary" onclick="useLocalUrl()">🖥️ Use Local (SAM Local)</button>
+                </div>
+                <div id="settingsResult" class="result-box"></div>
+
+                <hr>
+                <h3>Quick Health Check</h3>
+                <p class="hint">Test connectivity by trying to fetch employees.</p>
+                <button class="btn btn-secondary" onclick="healthCheck()">🩺 Test Connection</button>
+                <div id="healthCheckResult" class="result-box"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>TechQuarter Corporate Booking Tool &copy; 2026 | Powered by AWS Lambda + DynamoDB</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
