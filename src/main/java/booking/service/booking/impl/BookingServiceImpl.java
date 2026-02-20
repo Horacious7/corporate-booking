@@ -1,12 +1,12 @@
-package booking.service.impl;
+package booking.service.booking.impl;
 
 import booking.dto.BookingRequest;
 import booking.dto.BookingResponse;
 import booking.entity.Booking;
-import booking.repository.BookingPersistenceException;
-import booking.repository.BookingRepository;
-import booking.repository.BookingRepositoryFactory;
-import booking.service.BookingService;
+import booking.repository.exception.BookingPersistenceException;
+import booking.repository.booking.BookingRepository;
+import booking.repository.booking.BookingRepositoryFactory;
+import booking.service.booking.BookingService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

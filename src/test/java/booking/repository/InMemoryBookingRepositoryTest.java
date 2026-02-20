@@ -1,7 +1,7 @@
 package booking.repository;
 
 import booking.entity.Booking;
-import booking.repository.impl.InMemoryBookingRepository;
+import booking.repository.booking.impl.InMemoryBookingRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

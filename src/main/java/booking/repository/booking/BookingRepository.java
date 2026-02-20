@@ -1,6 +1,7 @@
-package booking.repository;
+package booking.repository.booking;
 
 import booking.entity.Booking;
+import booking.repository.exception.BookingPersistenceException;
 
 import java.util.List;
 import java.util.Optional;

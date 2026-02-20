@@ -1,4 +1,4 @@
-package booking.repository;
+package booking.repository.exception;
 
 /**
  * Custom exception for booking persistence operations.

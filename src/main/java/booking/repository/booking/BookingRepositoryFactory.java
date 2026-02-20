@@ -1,7 +1,7 @@
-package booking.repository;
+package booking.repository.booking;
 
-import booking.repository.impl.DynamoDBBookingRepository;
-import booking.repository.impl.InMemoryBookingRepository;
+import booking.repository.booking.impl.DynamoDBBookingRepository;
+import booking.repository.booking.impl.InMemoryBookingRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

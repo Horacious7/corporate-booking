@@ -1,8 +1,8 @@
-package booking.repository.impl;
+package booking.repository.booking.impl;
 
 import booking.entity.Booking;
-import booking.repository.BookingPersistenceException;
-import booking.repository.BookingRepository;
+import booking.repository.exception.BookingPersistenceException;
+import booking.repository.booking.BookingRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

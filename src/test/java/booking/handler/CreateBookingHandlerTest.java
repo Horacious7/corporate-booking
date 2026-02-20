@@ -1,7 +1,7 @@
 package booking.handler;
 
-import booking.repository.impl.InMemoryBookingRepository;
-import booking.service.impl.BookingServiceImpl;
+import booking.repository.booking.impl.InMemoryBookingRepository;
+import booking.service.booking.impl.BookingServiceImpl;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;

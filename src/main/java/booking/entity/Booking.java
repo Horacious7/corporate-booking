@@ -24,31 +24,14 @@ public class Booking implements Serializable {
     // serves as the primary key in DynamoDB.
     private String bookingReferenceId;
 
-
     private String employeeId;
-
-
     private String resourceType;
-
-
     private String destination;
-
-
     private String departureDate;
-
-
     private String returnDate;
-
-
     private Integer travelerCount;
-
-
     private String costCenterRef;
-
-
     private String tripPurpose;
-
-
     private String status;
 
    // Timestamps for record creation and last update, stored as ISO 8601 strings for consistency and ease of querying.

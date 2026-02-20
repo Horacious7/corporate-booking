@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import booking.dto.BookingRequest;
 import booking.dto.BookingResponse;
 import booking.exception.GlobalExceptionHandler;
-import booking.service.BookingService;
-import booking.service.impl.BookingServiceImpl;
+import booking.service.booking.BookingService;
+import booking.service.booking.impl.BookingServiceImpl;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
