@@ -1,5 +1,7 @@
 package booking.handler;
 
+import booking.repository.impl.InMemoryBookingRepository;
+import booking.service.impl.BookingServiceImpl;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,6 +39,8 @@ class CreateBookingHandlerTest {
     @BeforeEach
     void setUp() {
         handler = new CreateBookingHandler();
+        // Inject an InMemory-backed service to avoid DynamoDB connection in tests
+        handler.setBookingService(new BookingServiceImpl(new InMemoryBookingRepository()));
         objectMapper = new ObjectMapper();
         mockContext = new MockLambdaContext();
     }

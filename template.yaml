@@ -28,7 +28,7 @@ Resources:
         - AttributeName: bookingReferenceId
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: employeeId-index
+        - IndexName: employee-index
           KeySchema:
             - AttributeName: employeeId
               KeyType: HASH
@@ -41,7 +41,7 @@ Resources:
     Properties:
       FunctionName: techquarter-booking-handler
       CodeUri: .
-      Handler: booking.handler.BookingHandler::handleRequest
+      Handler: booking.handler.CreateBookingHandler::handleRequest
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref BookingsTable

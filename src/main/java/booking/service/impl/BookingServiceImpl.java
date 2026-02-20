@@ -2,6 +2,10 @@ package booking.service.impl;
 
 import booking.dto.BookingRequest;
 import booking.dto.BookingResponse;
+import booking.entity.Booking;
+import booking.repository.BookingPersistenceException;
+import booking.repository.BookingRepository;
+import booking.repository.BookingRepositoryFactory;
 import booking.service.BookingService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +25,25 @@ public class BookingServiceImpl implements BookingService {
     private static final String BOOKING_REF_PREFIX = "BKG-";
     private static final String STATUS_SUCCESS = "SUCCESS";
     private static final String STATUS_VALIDATION_ERROR = "VALIDATION_ERROR";
+
+    private final BookingRepository bookingRepository;
+
+    /**
+     * Default constructor - uses BookingRepositoryFactory to get the appropriate repository
+     * based on environment configuration (DynamoDB for production, InMemory for testing).
+     */
+    public BookingServiceImpl() {
+        this.bookingRepository = BookingRepositoryFactory.create();
+    }
+
+    /**
+     * Constructor for dependency injection (useful for testing).
+     *
+     * @param bookingRepository The repository to use for persistence
+     */
+    public BookingServiceImpl(BookingRepository bookingRepository) {
+        this.bookingRepository = bookingRepository;
+    }
 
     // Creates a new booking based on the provided request with validation and error handling
     @Override
@@ -43,18 +66,37 @@ public class BookingServiceImpl implements BookingService {
             // Generate unique booking reference ID
             String bookingReferenceId = generateBookingReference();
 
-            logger.info("Booking created successfully. Reference: {}", bookingReferenceId); // bookingReferenceId replaces {}
+            // Build the Booking entity from the request
+            Booking booking = Booking.builder()
+                .bookingReferenceId(bookingReferenceId)
+                .employeeId(request.getEmployeeId())
+                .resourceType(request.getResourceType())
+                .destination(request.getDestination())
+                .departureDate(request.getDepartureDate())
+                .returnDate(request.getReturnDate())
+                .travelerCount(request.getTravelerCount())
+                .costCenterRef(request.getCostCenterRef())
+                .tripPurpose(request.getTripPurpose())
+                .build();
+
+            // Persist the booking to the repository (DynamoDB or InMemory)
+            Booking savedBooking = bookingRepository.save(booking);
+
+            logger.info("Booking created and persisted successfully. Reference: {}", savedBooking.getBookingReferenceId());
 
             // Return success response
             return BookingResponse.builder()
                 .status(STATUS_SUCCESS)
-                .bookingReferenceId(bookingReferenceId)
+                .bookingReferenceId(savedBooking.getBookingReferenceId())
                 .message("Booking created successfully for employee " + request.getEmployeeId())
                 .build();
 
         } catch (IllegalArgumentException e) { //business logic errors
             logger.error("Validation error in booking request: {}", e.getMessage());
             return buildErrorResponse(STATUS_VALIDATION_ERROR, e.getMessage());
+        } catch (BookingPersistenceException e) { // persistence errors
+            logger.error("Failed to persist booking: {}", e.getMessage(), e);
+            return buildErrorResponse("SYSTEM_ERROR", "Failed to save booking. Please try again later.");
         } catch (Exception e) { //generic errors
             logger.error("Unexpected error processing booking request", e);
             return buildErrorResponse("SYSTEM_ERROR", "An unexpected error occurred processing your booking");
