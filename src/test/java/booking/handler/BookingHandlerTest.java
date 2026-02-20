@@ -1,6 +1,8 @@
 package booking.handler;
 
 import booking.repository.booking.impl.InMemoryBookingRepository;
+import booking.repository.employee.impl.InMemoryEmployeeRepository;
+import booking.entity.Employee;
 import booking.service.booking.impl.BookingServiceImpl;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -32,8 +34,17 @@ class BookingHandlerTest {
     @BeforeEach
     void setUp() {
         repository = new InMemoryBookingRepository();
+        InMemoryEmployeeRepository employeeRepo = new InMemoryEmployeeRepository();
+        employeeRepo.save(Employee.builder()
+                .employeeId("EMP9876")
+                .name("Test User")
+                .email("test@techquarter.com")
+                .department("Engineering")
+                .costCenterRef("CC-100")
+                .status("ACTIVE")
+                .build());
         handler = new BookingHandler();
-        handler.setBookingService(new BookingServiceImpl(repository));
+        handler.setBookingService(new BookingServiceImpl(repository, employeeRepo));
         objectMapper = new ObjectMapper();
         mockContext = new MockLambdaContext();
     }
@@ -48,7 +59,7 @@ class BookingHandlerTest {
     private String validBookingJson() throws Exception {
         return objectMapper.writeValueAsString(Map.ofEntries(
                 Map.entry("employeeId", "EMP9876"),
-                Map.entry("resourceType", "Flight"),
+                Map.entry("resourceType", "FLIGHT"),
                 Map.entry("destination", "NYC"),
                 Map.entry("departureDate", "2024-11-05 08:00:00"),
                 Map.entry("returnDate", "2024-11-08 18:00:00"),
@@ -129,7 +140,7 @@ class BookingHandlerTest {
         void shouldReturn400WhenEmployeeIdMissing() throws Exception {
             String json = objectMapper.writeValueAsString(Map.ofEntries(
                     Map.entry("employeeId", ""),
-                    Map.entry("resourceType", "Flight"),
+                    Map.entry("resourceType", "FLIGHT"),
                     Map.entry("destination", "NYC"),
                     Map.entry("departureDate", "2024-11-05 08:00:00"),
                     Map.entry("returnDate", "2024-11-08 18:00:00"),
@@ -215,15 +226,18 @@ class BookingHandlerTest {
         }
 
         @Test
-        @DisplayName("Should return 400 when no query params provided")
-        void shouldReturn400WhenNoParams() {
+        @DisplayName("Should return 200 with booking list when no query params (list all)")
+        void shouldReturnAllBookingsWhenNoParams() throws Exception {
+            createBookingAndGetRefId();
+
             APIGatewayProxyRequestEvent request = buildRequest("GET", null);
             request.setPath("/bookings");
 
             APIGatewayProxyResponseEvent response = handler.handleRequest(request, mockContext);
 
-            assertEquals(400, response.getStatusCode());
-            assertTrue(response.getBody().contains("VALIDATION_ERROR"));
+            assertEquals(200, response.getStatusCode());
+            List<?> list = objectMapper.readValue(response.getBody(), List.class);
+            assertEquals(1, list.size());
         }
     }
 

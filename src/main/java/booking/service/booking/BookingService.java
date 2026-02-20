@@ -60,5 +60,12 @@ public interface BookingService {
      * @return Response with updated booking data or error
      */
     BookingResponse updateBookingStatus(String bookingReferenceId, String newStatus);
+
+    /**
+     * Retrieves all bookings in the system.
+     *
+     * @return List of all booking responses
+     */
+    List<BookingResponse> getAllBookings();
 }
 

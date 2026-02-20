@@ -14,7 +14,80 @@ let API_BASE_URL = localStorage.getItem('apiBaseUrl') || '';
 document.addEventListener('DOMContentLoaded', () => {
     const apiInput = document.getElementById('apiBaseUrl');
     if (apiInput) apiInput.value = API_BASE_URL;
+
+    // Dynamic booking form based on resource type
+    const resourceSelect = document.getElementById('bookResourceType');
+    if (resourceSelect) {
+        resourceSelect.addEventListener('change', updateBookingFormLabels);
+    }
 });
+
+function updateBookingFormLabels() {
+    const type = document.getElementById('bookResourceType').value;
+    const labelDest = document.getElementById('labelDestination');
+    const labelDep = document.getElementById('labelDeparture');
+    const labelRet = document.getElementById('labelReturn');
+    const labelTravelers = document.getElementById('labelTravelers');
+    const labelPurpose = document.getElementById('labelPurpose');
+    const returnInput = document.getElementById('bookReturn');
+    const purposeInput = document.getElementById('bookPurpose');
+    const returnGroup = document.getElementById('returnDateGroup');
+    const destInput = document.getElementById('bookDestination');
+
+    // Reset defaults
+    returnGroup.style.display = '';
+    returnInput.required = true;
+    purposeInput.required = true;
+
+    switch (type) {
+        case 'FLIGHT':
+            labelDest.textContent = 'Destination';
+            destInput.placeholder = 'e.g. Cluj-Napoca';
+            labelDep.textContent = 'Departure Date';
+            labelRet.textContent = 'Return Date (optional)';
+            returnInput.required = false;
+            labelTravelers.textContent = 'Passengers';
+            labelPurpose.textContent = 'Trip Purpose';
+            purposeInput.placeholder = 'e.g. Client meeting in Cluj';
+            break;
+        case 'HOTEL':
+            labelDest.textContent = 'Hotel Location';
+            destInput.placeholder = 'e.g. Hilton Cluj-Napoca';
+            labelDep.textContent = 'Check-in Date';
+            labelRet.textContent = 'Check-out Date';
+            labelTravelers.textContent = 'Guests';
+            labelPurpose.textContent = 'Stay Purpose';
+            purposeInput.placeholder = 'e.g. Business trip accommodation';
+            break;
+        case 'CAR_RENTAL':
+            labelDest.textContent = 'Pickup Location';
+            destInput.placeholder = 'e.g. Airport Cluj';
+            labelDep.textContent = 'Pickup Date';
+            labelRet.textContent = 'Return Date';
+            labelTravelers.textContent = 'Drivers';
+            labelPurpose.textContent = 'Trip Purpose';
+            purposeInput.placeholder = 'e.g. Travel between offices';
+            break;
+        case 'CONFERENCE_ROOM':
+            labelDest.textContent = 'Location';
+            destInput.placeholder = 'e.g. Meeting Room A, Floor 3';
+            labelDep.textContent = 'Start Date';
+            labelRet.textContent = 'End Date';
+            labelTravelers.textContent = 'Attendees';
+            labelPurpose.textContent = 'Purpose (optional)';
+            purposeInput.placeholder = 'e.g. Sprint planning meeting';
+            purposeInput.required = false;
+            break;
+        default:
+            labelDest.textContent = 'Destination';
+            destInput.placeholder = 'e.g. Cluj-Napoca';
+            labelDep.textContent = 'Departure Date';
+            labelRet.textContent = 'Return Date';
+            labelTravelers.textContent = 'Travelers';
+            labelPurpose.textContent = 'Trip Purpose';
+            purposeInput.placeholder = 'e.g. Client meeting in Cluj';
+    }
+}
 
 // ==================== Tab Navigation ====================
 
@@ -318,6 +391,29 @@ async function searchBookingsByEmployee() {
     }
 }
 
+// List All Bookings
+async function listAllBookings() {
+    showResult('searchBookingResult', 'info', '<span class="loading"></span> Loading all bookings...');
+
+    try {
+        const data = await apiCall('GET', '/bookings');
+
+        if (Array.isArray(data)) {
+            if (data.length === 0) {
+                showResult('searchBookingResult', 'info', 'No bookings created yet.');
+            } else {
+                const summary = data.map(formatBookingSummary).join('');
+                showResult('searchBookingResult', 'success',
+                    `<strong>Total: ${data.length} booking(s)</strong>${summary}`);
+            }
+        } else {
+            showResult('searchBookingResult', 'error', `❌ ${data.status}: ${data.message}`);
+        }
+    } catch (err) {
+        showResult('searchBookingResult', 'error', `❌ Error: ${err.message}`);
+    }
+}
+
 // Update Booking Status
 async function updateBookingStatus() {
     const ref = document.getElementById('updateBookingRef').value.trim();
@@ -401,12 +497,26 @@ function formatEmployeeSummary(emp) {
 }
 
 function formatBooking(booking) {
-    const statusClass = booking.status === 'SUCCESS' ? 'success' : (booking.status === 'NOT_FOUND' ? 'error' : 'info');
+    if (booking.status !== 'SUCCESS') {
+        return `
+        <div class="result-item">
+            <span class="status-badge error">${booking.status}</span>
+            <br><span class="label">Message:</span> <span class="value">${booking.message || 'N/A'}</span>
+        </div>`;
+    }
     return `
         <div class="result-item">
-            <span class="status-badge ${statusClass}">${booking.status}</span>
+            <span class="status-badge success">✓</span>
             <br><span class="label">Reference:</span> <span class="value">${booking.bookingReferenceId || 'N/A'}</span>
             <br><span class="label">Details:</span> <span class="value">${booking.message || 'N/A'}</span>
+        </div>`;
+}
+
+function formatBookingSummary(booking) {
+    return `
+        <div class="result-item" style="padding: 6px 10px;">
+            <strong>${booking.bookingReferenceId}</strong>
+            <span style="color:#888; margin-left:8px;">${booking.message || ''}</span>
         </div>`;
 }
 

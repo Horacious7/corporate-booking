@@ -6,6 +6,9 @@ import booking.entity.Booking;
 import booking.repository.exception.BookingPersistenceException;
 import booking.repository.booking.BookingRepository;
 import booking.repository.booking.BookingRepositoryFactory;
+import booking.repository.employee.EmployeeRepository;
+import booking.repository.employee.EmployeeRepositoryFactory;
+import booking.repository.exception.EmployeePersistenceException;
 import booking.service.booking.BookingService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,23 +48,34 @@ public class BookingServiceImpl implements BookingService {
     private static final Set<String> TERMINAL_STATUSES =
         Set.of("CANCELLED", "COMPLETED");
 
+    private static final Set<String> VALID_RESOURCE_TYPES =
+        Set.of("FLIGHT", "HOTEL", "CAR_RENTAL", "CONFERENCE_ROOM");
+
     private final BookingRepository bookingRepository;
+    private final EmployeeRepository employeeRepository;
 
     /**
-     * Default constructor - uses BookingRepositoryFactory to get the appropriate repository
-     * based on environment configuration (DynamoDB for production, InMemory for testing).
+     * Default constructor - uses factories for both repositories.
      */
     public BookingServiceImpl() {
         this.bookingRepository = BookingRepositoryFactory.create();
+        this.employeeRepository = EmployeeRepositoryFactory.create();
     }
 
     /**
-     * Constructor for dependency injection (useful for testing).
-     *
-     * @param bookingRepository The repository to use for persistence
+     * Constructor for dependency injection with booking repo only (backward compat).
      */
     public BookingServiceImpl(BookingRepository bookingRepository) {
         this.bookingRepository = bookingRepository;
+        this.employeeRepository = EmployeeRepositoryFactory.create();
+    }
+
+    /**
+     * Constructor for full dependency injection (useful for testing).
+     */
+    public BookingServiceImpl(BookingRepository bookingRepository, EmployeeRepository employeeRepository) {
+        this.bookingRepository = bookingRepository;
+        this.employeeRepository = employeeRepository;
     }
 
     // ==================== Create Booking ====================
@@ -78,6 +92,19 @@ public class BookingServiceImpl implements BookingService {
         try {
             validateBookingRequest(request);
             validateBookingDates(request);
+
+            // Verify employee exists
+            try {
+                if (!employeeRepository.existsByEmployeeId(request.getEmployeeId())) {
+                    logger.warn("Employee not found: {}", request.getEmployeeId());
+                    return buildErrorResponse(STATUS_VALIDATION_ERROR, null,
+                        "Employee not found: " + request.getEmployeeId() + ". Register the employee first.");
+                }
+            } catch (EmployeePersistenceException e) {
+                logger.error("Could not verify employee existence: {}", e.getMessage());
+                return buildErrorResponse(STATUS_SYSTEM_ERROR, null,
+                    "Could not verify employee. Please try again later.");
+            }
 
             String bookingReferenceId = generateBookingReference();
 
@@ -253,6 +280,31 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    // ==================== Get All Bookings ====================
+
+    @Override
+    public List<BookingResponse> getAllBookings() {
+        logger.info("Retrieving all bookings");
+
+        try {
+            List<Booking> bookings = bookingRepository.findAll();
+
+            return bookings.stream()
+                .map(booking -> BookingResponse.builder()
+                    .status(STATUS_SUCCESS)
+                    .bookingReferenceId(booking.getBookingReferenceId())
+                    .message(booking.getResourceType() + " — " + booking.getDestination()
+                        + " [" + booking.getStatus() + "] (Employee: " + booking.getEmployeeId() + ")")
+                    .build())
+                .collect(Collectors.toList());
+
+        } catch (BookingPersistenceException e) {
+            logger.error("Failed to retrieve all bookings", e);
+            return List.of(buildErrorResponse(STATUS_SYSTEM_ERROR, null,
+                "Failed to retrieve bookings. Please try again later."));
+        }
+    }
+
     // ==================== Private Helper Methods ====================
 
     private void validateBookingRequest(BookingRequest request) {
@@ -262,14 +314,25 @@ public class BookingServiceImpl implements BookingService {
         if (isBlank(request.getResourceType())) {
             throw new IllegalArgumentException("Resource type is required");
         }
+
+        String resourceType = request.getResourceType().toUpperCase();
+        if (!VALID_RESOURCE_TYPES.contains(resourceType)) {
+            throw new IllegalArgumentException("Invalid resource type. Allowed: FLIGHT, HOTEL, CAR_RENTAL, CONFERENCE_ROOM");
+        }
+
+        // Normalize resource type on request for consistent downstream handling
+        request.setResourceType(resourceType);
+
         if (isBlank(request.getDestination())) {
-            throw new IllegalArgumentException("Destination is required");
+            throw new IllegalArgumentException("CONFERENCE_ROOM".equals(resourceType)
+                ? "Location is required" : "Destination is required");
         }
         if (isBlank(request.getDepartureDate())) {
-            throw new IllegalArgumentException("Departure date is required");
+            throw new IllegalArgumentException("Start date is required");
         }
-        if (isBlank(request.getReturnDate())) {
-            throw new IllegalArgumentException("Return date is required");
+        // Return date is optional for FLIGHT (one-way flights)
+        if (!"FLIGHT".equals(resourceType) && isBlank(request.getReturnDate())) {
+            throw new IllegalArgumentException("End date is required");
         }
         if (request.getTravelerCount() == null || request.getTravelerCount() < 1) {
             throw new IllegalArgumentException("Traveler count must be at least 1");
@@ -277,7 +340,8 @@ public class BookingServiceImpl implements BookingService {
         if (isBlank(request.getCostCenterRef())) {
             throw new IllegalArgumentException("Cost center reference is required");
         }
-        if (isBlank(request.getTripPurpose())) {
+        // Trip purpose is optional for CONFERENCE_ROOM
+        if (!"CONFERENCE_ROOM".equals(resourceType) && isBlank(request.getTripPurpose())) {
             throw new IllegalArgumentException("Trip purpose is required");
         }
     }
@@ -285,13 +349,17 @@ public class BookingServiceImpl implements BookingService {
     private void validateBookingDates(BookingRequest request) {
         try {
             LocalDateTime departureDateTime = LocalDateTime.parse(request.getDepartureDate(), DATE_TIME_FORMATTER);
-            LocalDateTime returnDateTime = LocalDateTime.parse(request.getReturnDate(), DATE_TIME_FORMATTER);
 
-            if (departureDateTime.isAfter(returnDateTime)) {
-                throw new IllegalArgumentException("Departure date must be before return date");
-            }
-            if (departureDateTime.equals(returnDateTime)) {
-                throw new IllegalArgumentException("Departure and return dates cannot be the same");
+            // If return date is provided, validate it
+            if (!isBlank(request.getReturnDate())) {
+                LocalDateTime returnDateTime = LocalDateTime.parse(request.getReturnDate(), DATE_TIME_FORMATTER);
+
+                if (departureDateTime.isAfter(returnDateTime)) {
+                    throw new IllegalArgumentException("Start date must be before end date");
+                }
+                if (departureDateTime.equals(returnDateTime)) {
+                    throw new IllegalArgumentException("Start and end dates cannot be the same");
+                }
             }
         } catch (DateTimeParseException e) {
             throw new IllegalArgumentException("Invalid date format. Expected 'yyyy-MM-dd HH:mm:ss'");

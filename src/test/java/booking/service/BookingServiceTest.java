@@ -6,6 +6,8 @@ import booking.entity.Booking;
 import booking.repository.exception.BookingPersistenceException;
 import booking.repository.booking.BookingRepository;
 import booking.repository.booking.impl.InMemoryBookingRepository;
+import booking.repository.employee.impl.InMemoryEmployeeRepository;
+import booking.entity.Employee;
 import booking.service.booking.BookingService;
 import booking.service.booking.impl.BookingServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,11 +40,22 @@ class BookingServiceTest {
 
     private BookingService bookingService;
     private InMemoryBookingRepository bookingRepository;
+    private InMemoryEmployeeRepository employeeRepository;
 
     @BeforeEach
     void setUp() {
         bookingRepository = new InMemoryBookingRepository();
-        bookingService = new BookingServiceImpl(bookingRepository);
+        employeeRepository = new InMemoryEmployeeRepository();
+
+        // Pre-register test employees
+        employeeRepository.save(Employee.builder()
+            .employeeId("EMP9876").name("Test User").email("test@test.com")
+            .department("Engineering").costCenterRef("CC-100").status("ACTIVE").build());
+        employeeRepository.save(Employee.builder()
+            .employeeId("EMP1111").name("Another User").email("another@test.com")
+            .department("Sales").costCenterRef("CC-200").status("ACTIVE").build());
+
+        bookingService = new BookingServiceImpl(bookingRepository, employeeRepository);
     }
 
     @Test
@@ -162,7 +175,7 @@ class BookingServiceTest {
 
         // Assert
         assertEquals("VALIDATION_ERROR", response.getStatus());
-        assertTrue(response.getMessage().contains("Departure date must be before return date"));
+        assertTrue(response.getMessage().contains("Start date must be before end date"));
     }
 
     @Test
@@ -318,7 +331,7 @@ class BookingServiceTest {
         var savedBooking = bookingRepository.findByBookingReferenceId(response.getBookingReferenceId());
         assertTrue(savedBooking.isPresent());
         assertEquals("EMP9876", savedBooking.get().getEmployeeId());
-        assertEquals("Flight", savedBooking.get().getResourceType());
+        assertEquals("FLIGHT", savedBooking.get().getResourceType());
         assertEquals("NYC", savedBooking.get().getDestination());
         assertEquals("PENDING", savedBooking.get().getStatus());
         assertNotNull(savedBooking.get().getCreatedAt());
@@ -401,7 +414,7 @@ class BookingServiceTest {
             @Override public long countByEmployeeId(String id) { return 0; }
         };
 
-        BookingService failingService = new BookingServiceImpl(failingRepo);
+        BookingService failingService = new BookingServiceImpl(failingRepo, employeeRepository);
 
         BookingRequest request = BookingRequest.builder()
             .employeeId("EMP9876")

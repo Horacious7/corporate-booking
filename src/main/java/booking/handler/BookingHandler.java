@@ -124,10 +124,9 @@ public class BookingHandler implements RequestHandler<APIGatewayProxyRequestEven
             return buildJsonListResponse(HTTP_OK, responses);
         }
 
-        // No params → could return all, but for safety return a hint
-        return buildJsonResponse(HTTP_BAD_REQUEST,
-                new BookingResponse("VALIDATION_ERROR", null,
-                        "Provide a booking reference ID in path or employeeId as query parameter"));
+        // No params → list all bookings
+        List<BookingResponse> allBookings = bookingService.getAllBookings();
+        return buildJsonListResponse(HTTP_OK, allBookings);
     }
 
     // ==================== PATCH /bookings/{id}/status ====================
