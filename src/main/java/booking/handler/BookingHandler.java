@@ -187,10 +187,17 @@ public class BookingHandler implements RequestHandler<APIGatewayProxyRequestEven
         };
     }
 
+    private static final Map<String, String> CORS_HEADERS = Map.of(
+            HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON,
+            "Access-Control-Allow-Origin", "*",
+            "Access-Control-Allow-Methods", "GET,POST,PATCH,DELETE,OPTIONS",
+            "Access-Control-Allow-Headers", "Content-Type,Authorization"
+    );
+
     private APIGatewayProxyResponseEvent buildJsonResponse(int statusCode, Object response) {
         APIGatewayProxyResponseEvent apiResponse = new APIGatewayProxyResponseEvent();
         apiResponse.setStatusCode(statusCode);
-        apiResponse.setHeaders(Map.of(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON));
+        apiResponse.setHeaders(CORS_HEADERS);
 
         try {
             apiResponse.setBody(objectMapper.writeValueAsString(response));
@@ -205,7 +212,7 @@ public class BookingHandler implements RequestHandler<APIGatewayProxyRequestEven
     private APIGatewayProxyResponseEvent buildJsonListResponse(int statusCode, List<?> responses) {
         APIGatewayProxyResponseEvent apiResponse = new APIGatewayProxyResponseEvent();
         apiResponse.setStatusCode(statusCode);
-        apiResponse.setHeaders(Map.of(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON));
+        apiResponse.setHeaders(CORS_HEADERS);
 
         try {
             apiResponse.setBody(objectMapper.writeValueAsString(responses));

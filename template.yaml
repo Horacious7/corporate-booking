@@ -29,7 +29,6 @@ Globals:
       Variables:
         DYNAMODB_TABLE_NAME: !Ref BookingsTable
         EMPLOYEES_TABLE_NAME: !Ref EmployeesTable
-        DYNAMODB_ENDPOINT: "http://host.docker.internal:8000"
         REPOSITORY_TYPE: DYNAMODB
         JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
         ENVIRONMENT: !Ref Environment
