@@ -1,0 +1,11 @@
+{
+  "name": "techquarter-corporate-booking-frontend",
+  "version": "1.0.0",
+  "description": "TechQuarter Corporate Booking - Static Frontend",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . -l 5500 --cors",
+    "build": "echo \"Static site — no build step needed. Deploy the frontend/ folder directly.\""
+  }
+}
+
