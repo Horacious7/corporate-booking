@@ -154,7 +154,10 @@ corporate-booking/
 
 ## API Reference
 
-Base URL: `https://eoufh9djsk.execute-api.eu-central-1.amazonaws.com/Prod`
+| | URL |
+|---|---|
+| **API Base URL** | `https://eoufh9djsk.execute-api.eu-central-1.amazonaws.com/Prod` |
+| **Frontend URL** | `https://d3gfm8d6xkaun4.cloudfront.net` |
 
 ### Bookings
 
@@ -232,7 +235,7 @@ Base URL: `https://eoufh9djsk.execute-api.eu-central-1.amazonaws.com/Prod`
 ### 1 — Clone & build
 
 ```bash
-git clone https://github.com/<your-org>/corporate-booking.git
+git clone https://github.com/Horacious7/corporate-booking.git
 cd corporate-booking
 mvn clean package -DskipTests
 ```
@@ -348,6 +351,16 @@ The frontend is a **zero-dependency static SPA** deployed to S3 + CloudFront.
 - Booking list with status badges
 - Light / Dark mode toggle
 - Fully responsive (mobile-first)
+
+### Design & Assets
+
+| Asset | Source |
+|---|---|
+| Colour palette | [Coolors](https://coolors.co/) |
+| Background patterns | [Haikei](https://app.haikei.app/) — separate light & dark variants |
+| Icons | Open-source SVG emoji icons (free to use) |
+| Company logo | Official TechQuarters brand asset |
+| Visual design | Hand-crafted by the developer |
 
 ### Local preview
 
