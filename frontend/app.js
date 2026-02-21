@@ -173,23 +173,23 @@ document.getElementById('registerEmployeeForm').addEventListener('submit', async
 
         if (data.status === 'SUCCESS') {
             showResult('registerEmployeeResult', 'success',
-                `✅ Employee registered!<br>
+                `${SVG_OK} Employee registered!<br>
                 <strong>ID:</strong> ${data.employeeId}<br>
                 <strong>Message:</strong> ${data.message}`);
             e.target.reset();
         } else {
             showResult('registerEmployeeResult', 'error',
-                `❌ ${data.status}: ${data.message}`);
+                `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('registerEmployeeResult', 'error', `❌ Error: ${err.message}`);
+        showResult('registerEmployeeResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 });
 
 // Search Employee by ID
 async function searchEmployeeById() {
     const id = document.getElementById('searchEmpId').value.trim();
-    if (!id) return showResult('searchEmployeeResult', 'error', '⚠️ Enter an Employee ID');
+    if (!id) return showResult('searchEmployeeResult', 'error', `${SVG_WARN} Enter an Employee ID`);
 
     showResult('searchEmployeeResult', 'info', '<span class="loading"></span> Searching...');
 
@@ -199,17 +199,17 @@ async function searchEmployeeById() {
         if (data.status === 'SUCCESS') {
             showResult('searchEmployeeResult', 'success', formatEmployee(data));
         } else {
-            showResult('searchEmployeeResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('searchEmployeeResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('searchEmployeeResult', 'error', `❌ Error: ${err.message}`);
+        showResult('searchEmployeeResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
 // Search Employees by Email
 async function searchEmployeesByEmail() {
     const email = document.getElementById('searchEmpEmail').value.trim();
-    if (!email) return showResult('searchEmployeeResult', 'error', '⚠️ Enter an email');
+    if (!email) return showResult('searchEmployeeResult', 'error', `${SVG_WARN} Enter an email`);
 
     showResult('searchEmployeeResult', 'info', '<span class="loading"></span> Searching...');
 
@@ -223,17 +223,17 @@ async function searchEmployeesByEmail() {
                 showResult('searchEmployeeResult', 'success', data.map(formatEmployee).join(''));
             }
         } else {
-            showResult('searchEmployeeResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('searchEmployeeResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('searchEmployeeResult', 'error', `❌ Error: ${err.message}`);
+        showResult('searchEmployeeResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
 // Search Employees by Department
 async function searchEmployeesByDepartment() {
     const dept = document.getElementById('searchEmpDept').value;
-    if (!dept) return showResult('searchEmployeeResult', 'error', '⚠️ Select a department');
+    if (!dept) return showResult('searchEmployeeResult', 'error', `${SVG_WARN} Select a department`);
 
     showResult('searchEmployeeResult', 'info', '<span class="loading"></span> Searching...');
 
@@ -247,10 +247,10 @@ async function searchEmployeesByDepartment() {
                 showResult('searchEmployeeResult', 'success', data.map(formatEmployee).join(''));
             }
         } else {
-            showResult('searchEmployeeResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('searchEmployeeResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('searchEmployeeResult', 'error', `❌ Error: ${err.message}`);
+        showResult('searchEmployeeResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
@@ -270,10 +270,10 @@ async function listAllEmployees() {
                     `<strong>Total: ${data.length} employee(s)</strong>${summary}`);
             }
         } else {
-            showResult('searchEmployeeResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('searchEmployeeResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('searchEmployeeResult', 'error', `❌ Error: ${err.message}`);
+        showResult('searchEmployeeResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
@@ -281,7 +281,7 @@ async function listAllEmployees() {
 async function updateEmployeeStatus() {
     const id = document.getElementById('statusEmpId').value.trim();
     const status = document.getElementById('empNewStatus').value;
-    if (!id) return showResult('manageEmployeeResult', 'error', '⚠️ Enter an Employee ID');
+    if (!id) return showResult('manageEmployeeResult', 'error', `${SVG_WARN} Enter an Employee ID`);
 
     showResult('manageEmployeeResult', 'info', '<span class="loading"></span> Updating status...');
 
@@ -289,19 +289,19 @@ async function updateEmployeeStatus() {
         const data = await apiCall('PATCH', `/employees/${encodeURIComponent(id)}/status`, { status });
 
         if (data.status === 'SUCCESS') {
-            showResult('manageEmployeeResult', 'success', `✅ ${data.message}`);
+            showResult('manageEmployeeResult', 'success', `${SVG_OK} ${data.message}`);
         } else {
-            showResult('manageEmployeeResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('manageEmployeeResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('manageEmployeeResult', 'error', `❌ Error: ${err.message}`);
+        showResult('manageEmployeeResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
 // Delete Employee
 async function deleteEmployee() {
     const id = document.getElementById('deleteEmpId').value.trim();
-    if (!id) return showResult('manageEmployeeResult', 'error', '⚠️ Enter an Employee ID');
+    if (!id) return showResult('manageEmployeeResult', 'error', `${SVG_WARN} Enter an Employee ID`);
 
     if (!confirm(`Are you sure you want to delete employee ${id}?`)) return;
 
@@ -311,12 +311,12 @@ async function deleteEmployee() {
         const data = await apiCall('DELETE', `/employees/${encodeURIComponent(id)}`);
 
         if (data.status === 'SUCCESS') {
-            showResult('manageEmployeeResult', 'success', `✅ ${data.message}`);
+            showResult('manageEmployeeResult', 'success', `${SVG_OK} ${data.message}`);
         } else {
-            showResult('manageEmployeeResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('manageEmployeeResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('manageEmployeeResult', 'error', `❌ Error: ${err.message}`);
+        showResult('manageEmployeeResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
@@ -347,15 +347,15 @@ document.getElementById('createBookingForm').addEventListener('submit', async (e
 
         if (data.status === 'SUCCESS') {
             showResult('createBookingResult', 'success',
-                `✅ Booking created!<br>
+                `${SVG_OK} Booking created!<br>
                 <strong>Reference:</strong> ${data.bookingReferenceId}<br>
                 <strong>Message:</strong> ${data.message}`);
             e.target.reset();
         } else {
-            showResult('createBookingResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('createBookingResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('createBookingResult', 'error', `❌ Error: ${err.message}`);
+        showResult('createBookingResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 });
 
@@ -382,7 +382,7 @@ async function searchBookingByRef() {
 // Search Bookings by Employee ID
 async function searchBookingsByEmployee() {
     const empId = document.getElementById('searchBookingEmpId').value.trim();
-    if (!empId) return showResult('searchBookingResult', 'error', '⚠️ Enter an Employee ID');
+    if (!empId) return showResult('searchBookingResult', 'error', '`const SVG_WARN Enter an Employee ID');
 
     showResult('searchBookingResult', 'info', '<span class="loading"></span> Searching...');
 
@@ -430,7 +430,7 @@ async function listAllBookings() {
 async function updateBookingStatus() {
     const ref = document.getElementById('updateBookingRef').value.trim();
     const status = document.getElementById('bookNewStatus').value;
-    if (!ref) return showResult('updateBookingResult', 'error', '⚠️ Enter a booking reference ID');
+    if (!ref) return showResult('updateBookingResult', 'error', '`const SVG_WARN Enter a booking reference ID');
 
     showResult('updateBookingResult', 'info', '<span class="loading"></span> Updating status...');
 
@@ -438,12 +438,12 @@ async function updateBookingStatus() {
         const data = await apiCall('PATCH', `/bookings/${encodeURIComponent(ref)}/status`, { status });
 
         if (data.status === 'SUCCESS') {
-            showResult('updateBookingResult', 'success', `${SVG_OK} ${data.message}`);
+            showResult('updateBookingResult', 'success', `SVG_OK ${data.message}`);
         } else {
-            showResult('updateBookingResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
+            showResult('updateBookingResult', 'error', `❌ ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('updateBookingResult', 'error', `${SVG_ERR} Error: ${err.message}`);
+        showResult('updateBookingResult', 'error', `❌ Error: ${err.message}`);
     }
 }
 
