@@ -362,7 +362,7 @@ document.getElementById('createBookingForm').addEventListener('submit', async (e
 // Search Booking by Reference ID
 async function searchBookingByRef() {
     const ref = document.getElementById('searchBookingRef').value.trim();
-    if (!ref) return showResult('searchBookingResult', 'error', '⚠️ Enter a booking reference ID');
+    if (!ref) return showResult('searchBookingResult', 'error', `${SVG_WARN} Enter a booking reference ID`);
 
     showResult('searchBookingResult', 'info', '<span class="loading"></span> Searching...');
 
@@ -372,17 +372,17 @@ async function searchBookingByRef() {
         if (data.status === 'SUCCESS') {
             showResult('searchBookingResult', 'success', formatBooking(data));
         } else {
-            showResult('searchBookingResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('searchBookingResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('searchBookingResult', 'error', `❌ Error: ${err.message}`);
+        showResult('searchBookingResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
 // Search Bookings by Employee ID
 async function searchBookingsByEmployee() {
     const empId = document.getElementById('searchBookingEmpId').value.trim();
-    if (!empId) return showResult('searchBookingResult', 'error', '`const SVG_WARN Enter an Employee ID');
+    if (!empId) return showResult('searchBookingResult', 'error', `${SVG_WARN} Enter an Employee ID`);
 
     showResult('searchBookingResult', 'info', '<span class="loading"></span> Searching...');
 
@@ -396,10 +396,10 @@ async function searchBookingsByEmployee() {
                 showResult('searchBookingResult', 'success', data.map(formatBooking).join(''));
             }
         } else {
-            showResult('searchBookingResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('searchBookingResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('searchBookingResult', 'error', `❌ Error: ${err.message}`);
+        showResult('searchBookingResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
@@ -419,10 +419,10 @@ async function listAllBookings() {
                     `<strong>Total: ${data.length} booking(s)</strong>${summary}`);
             }
         } else {
-            showResult('searchBookingResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('searchBookingResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('searchBookingResult', 'error', `❌ Error: ${err.message}`);
+        showResult('searchBookingResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
@@ -430,7 +430,7 @@ async function listAllBookings() {
 async function updateBookingStatus() {
     const ref = document.getElementById('updateBookingRef').value.trim();
     const status = document.getElementById('bookNewStatus').value;
-    if (!ref) return showResult('updateBookingResult', 'error', '`const SVG_WARN Enter a booking reference ID');
+    if (!ref) return showResult('updateBookingResult', 'error', `${SVG_WARN} Enter a booking reference ID`);
 
     showResult('updateBookingResult', 'info', '<span class="loading"></span> Updating status...');
 
@@ -438,12 +438,12 @@ async function updateBookingStatus() {
         const data = await apiCall('PATCH', `/bookings/${encodeURIComponent(ref)}/status`, { status });
 
         if (data.status === 'SUCCESS') {
-            showResult('updateBookingResult', 'success', `SVG_OK ${data.message}`);
+            showResult('updateBookingResult', 'success', `${SVG_OK} ${data.message}`);
         } else {
-            showResult('updateBookingResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('updateBookingResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('updateBookingResult', 'error', `❌ Error: ${err.message}`);
+        showResult('updateBookingResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
