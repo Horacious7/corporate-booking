@@ -154,7 +154,7 @@ corporate-booking/
 
 ## API Reference
 
-Base URL: `https://{api-id}.execute-api.{region}.amazonaws.com/Prod`
+Base URL: `https://eoufh9djsk.execute-api.eu-central-1.amazonaws.com/Prod`
 
 ### Bookings
 
