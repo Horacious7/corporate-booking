@@ -438,12 +438,12 @@ async function updateBookingStatus() {
         const data = await apiCall('PATCH', `/bookings/${encodeURIComponent(ref)}/status`, { status });
 
         if (data.status === 'SUCCESS') {
-            showResult('updateBookingResult', 'success', `✅ ${data.message}`);
+            showResult('updateBookingResult', 'success', `${SVG_OK} ${data.message}`);
         } else {
-            showResult('updateBookingResult', 'error', `❌ ${data.status}: ${data.message}`);
+            showResult('updateBookingResult', 'error', `${SVG_ERR} ${data.status}: ${data.message}`);
         }
     } catch (err) {
-        showResult('updateBookingResult', 'error', `❌ Error: ${err.message}`);
+        showResult('updateBookingResult', 'error', `${SVG_ERR} Error: ${err.message}`);
     }
 }
 
@@ -469,22 +469,66 @@ async function apiCall(method, path, body = null) {
     return data;
 }
 
-// ==================== Formatting Helpers ====================
+const SVG_OK   = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:4px"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SVG_ERR  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:4px"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const SVG_WARN = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="vertical-align:middle;margin-right:4px"><path d="M12 9V13M12 17H12.01M10.29 3.86L1.82 18C1.64 18.3 1.55 18.65 1.56 19C1.56 19.55 1.81 20.08 2.24 20.44C2.66 20.8 3.22 21 3.8 21H20.2C20.78 21 21.34 20.8 21.76 20.44C22.19 20.08 22.44 19.55 22.44 19C22.45 18.65 22.36 18.3 22.18 18L13.71 3.86C13.52 3.52 13.23 3.25 12.88 3.07C12.53 2.9 12.14 2.82 11.76 2.86C11.22 2.92 10.72 3.25 10.29 3.86Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const ICONS = {
+    check: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    x:     `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+    pause: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M10 9V15M14 9V15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>`,
+    clock: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7V12L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+};
+
+function statusIcon(status) {
+    switch ((status || '').toUpperCase()) {
+        case 'ACTIVE':
+        case 'CONFIRMED':
+        case 'COMPLETED':
+            return ICONS.check;
+        case 'INACTIVE':
+        case 'CANCELLED':
+            return ICONS.x;
+        case 'SUSPENDED':
+            return ICONS.pause;
+        case 'PENDING':
+            return ICONS.clock;
+        default:
+            return ICONS.check;
+    }
+}
+
+function statusClass(status) {
+    switch ((status || '').toUpperCase()) {
+        case 'ACTIVE':
+        case 'CONFIRMED':
+        case 'COMPLETED':
+            return 'success';
+        case 'INACTIVE':
+        case 'CANCELLED':
+            return 'error';
+        case 'SUSPENDED':
+        case 'PENDING':
+            return 'warning';
+        default:
+            return 'info';
+    }
+}
 
 function formatEmployee(emp) {
     if (emp.status !== 'SUCCESS') {
         return `
         <div class="result-item">
-            <span class="status-badge error">${emp.status}</span>
+            <span class="status-badge error">${ICONS.x} ${emp.status}</span>
             <br><span class="label">Message:</span> <span class="value">${emp.message || 'N/A'}</span>
         </div>`;
     }
 
-    const empStatusClass = emp.employeeStatus === 'ACTIVE' ? 'success' :
-                           emp.employeeStatus === 'INACTIVE' ? 'error' : 'info';
+    const cls = statusClass(emp.employeeStatus);
+    const icon = statusIcon(emp.employeeStatus);
     return `
         <div class="result-item">
-            <span class="status-badge ${empStatusClass}">✓ ${emp.employeeStatus || 'N/A'}</span>
+            <span class="status-badge ${cls}">${icon} ${emp.employeeStatus || 'N/A'}</span>
             <br><span class="label">Employee ID:</span> <span class="value">${emp.employeeId || 'N/A'}</span>
             <br><span class="label">Name:</span> <span class="value">${emp.name || 'N/A'}</span>
             <br><span class="label">Email:</span> <span class="value">${emp.email || 'N/A'}</span>
@@ -494,11 +538,11 @@ function formatEmployee(emp) {
 }
 
 function formatEmployeeSummary(emp) {
-    const empStatusClass = emp.employeeStatus === 'ACTIVE' ? 'success' :
-                           emp.employeeStatus === 'INACTIVE' ? 'error' : 'info';
+    const cls = statusClass(emp.employeeStatus);
+    const icon = statusIcon(emp.employeeStatus);
     return `
         <div class="result-item" style="padding: 6px 10px;">
-            <span class="status-badge ${empStatusClass}" style="font-size:0.7em">${emp.employeeStatus || '?'}</span>
+            <span class="status-badge ${cls}" style="font-size:0.7em">${icon} ${emp.employeeStatus || '?'}</span>
             <strong>${emp.employeeId}</strong> — ${emp.name || 'N/A'}
             <span style="color:var(--text-light); margin-left:8px;">${emp.department || ''}</span>
         </div>`;
@@ -508,21 +552,24 @@ function formatBooking(booking) {
     if (booking.status !== 'SUCCESS') {
         return `
         <div class="result-item">
-            <span class="status-badge error">${booking.status}</span>
+            <span class="status-badge error">${ICONS.x} ${booking.status}</span>
             <br><span class="label">Message:</span> <span class="value">${booking.message || 'N/A'}</span>
         </div>`;
     }
     return `
         <div class="result-item">
-            <span class="status-badge success">✓</span>
+            <span class="status-badge success">${ICONS.check}</span>
             <br><span class="label">Reference:</span> <span class="value">${booking.bookingReferenceId || 'N/A'}</span>
             <br><span class="label">Details:</span> <span class="value">${booking.message || 'N/A'}</span>
         </div>`;
 }
 
 function formatBookingSummary(booking) {
+    const cls = statusClass(booking.bookingStatus);
+    const icon = statusIcon(booking.bookingStatus);
     return `
         <div class="result-item" style="padding: 6px 10px;">
+            ${booking.bookingStatus ? `<span class="status-badge ${cls}" style="font-size:0.7em">${icon} ${booking.bookingStatus}</span>` : ''}
             <strong>${booking.bookingReferenceId}</strong>
             <span style="color:var(--text-light); margin-left:8px;">${booking.message || ''}</span>
         </div>`;

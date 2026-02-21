@@ -601,11 +601,13 @@ select option {
     display: flex;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .inline-form input,
 .inline-form select {
     flex: 1;
+    min-width: 0;
     padding: 0.6rem 0.75rem;
     border: 2px solid var(--border-color);
     border-radius: var(--radius-md);
@@ -614,6 +616,10 @@ select option {
     background: var(--bg-primary);
     color: var(--text-primary);
     transition: all var(--transition-normal);
+}
+
+.inline-form .btn {
+    flex-shrink: 0;
 }
 
 .inline-form input:focus,
@@ -910,6 +916,19 @@ svg, svg path { transition: none !important; }
     header { padding: 1rem; }
     .tab-content { padding: 1rem; }
     footer { padding: 1rem; font-size: 0.8rem; }
+
+    /* inline-form: input full width, button full width below */
+    .inline-form {
+        flex-direction: column;
+    }
+    .inline-form input,
+    .inline-form select {
+        width: 100%;
+        flex: unset;
+    }
+    .inline-form .btn {
+        width: 100%;
+    }
 }
 
 @media (max-width: 480px) {
