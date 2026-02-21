@@ -116,6 +116,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref BookingsTable
+        - DynamoDBReadPolicy:
+          - TableName: !Ref EmployeesTable
       Tags:
         Project: TechQuarter-CorporateBooking
         Environment: !Ref Environment
