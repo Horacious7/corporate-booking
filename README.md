@@ -1,166 +1,185 @@
-# TechQuarter Corporate Booking Service
+# TechQuarter — Corporate Booking Platform
 
-A production-ready, serverless booking service built with AWS SAM, Java 17, and Maven. Designed to handle high-volume corporate travel bookings with 100+ transactions per second (TPS).
+> **Enterprise-grade serverless booking service** built on AWS Lambda, API Gateway, DynamoDB and a static web frontend — designed to handle **100+ TPS** with zero server management.
 
-## Project Overview
+---
 
-This service implements a **Workflow Service** for managing corporate booking requests. It follows a **Clean Architecture** pattern with clear separation of concerns (Handler → Service → Repository) and is fully optimized for AWS Lambda execution.
+## Table of Contents
 
-### Key Features
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [API Reference](#api-reference)
+- [Data Model](#data-model)
+- [Local Development](#local-development)
+- [Build & Deploy](#build--deploy)
+- [Testing](#testing)
+- [Frontend](#frontend)
+- [Design Decisions](#design-decisions)
 
-- **Serverless Architecture**: AWS Lambda + API Gateway
-- **High Performance**: Optimized for 100 TPS peak traffic
-- **Clean Code**: Well-documented, SOLID principles, OOP design patterns
-- **Enterprise Ready**: Comprehensive error handling, logging, and monitoring
-- **Infrastructure as Code**: AWS SAM template for rapid deployment
-- **Fully Tested**: Unit and integration tests with JUnit 5
+---
+
+## Overview
+
+TechQuarter Corporate Booking Platform is a workflow service that handles high-volume corporate travel and resource booking requests. It exposes a REST API consumed by a responsive web frontend and manages employees and bookings through AWS-native services.
+
+### Core Capabilities
+
+| Feature | Description |
+|---|---|
+| **Register Employee** | Create and manage employee profiles |
+| **Search Bookings** | Query bookings by employee, status, or resource type |
+| **Create Booking** | Reserve flights or hotel rooms with full validation |
+| **Update Booking Status** | Approve, reject, or cancel existing bookings |
+| **100 TPS** | Serverless auto-scaling handles peak traffic without provisioning |
+
+---
 
 ## Architecture
 
-### Clean Architecture Pattern
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         CLIENT                              │
+│          Static SPA (S3 + CloudFront CDN)                   │
+└─────────────────────────┬───────────────────────────────────┘
+                          │  HTTPS
+┌─────────────────────────▼───────────────────────────────────┐
+│                   API GATEWAY (REST)                        │
+│          /bookings   /employees   (CORS enabled)            │
+└──────────────┬──────────────────────────┬───────────────────┘
+               │                          │
+┌──────────────▼──────────┐  ┌────────────▼────────────────┐
+│    BookingFunction      │  │    EmployeeFunction         │
+│    Java 21 Lambda       │  │    Java 21 Lambda           │
+│    SnapStart enabled    │  │    SnapStart enabled        │
+│                         │  │                             │
+│  Handler Layer          │  │  Handler Layer              │
+│  Service Layer          │  │  Service Layer              │
+│  Repository Layer       │  │  Repository Layer           │
+│  DTO Layer              │  │  DTO Layer                  │
+└──────────────┬──────────┘  └────────────┬────────────────┘
+               │                          │
+┌──────────────▼──────────────────────────▼───────────────────┐
+│                        DynamoDB                             │
+│   techquarter-bookings-{env}   techquarter-employees-{env}  │
+│   PAY_PER_REQUEST billing      PITR enabled                 │
+└─────────────────────────────────────────────────────────────┘
+               │
+┌──────────────▼───────────────────────────────────────────────┐
+│              CloudWatch Logs + X-Ray Tracing                 │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Clean Architecture Layers
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      HTTP Layer                         │
-│              (API Gateway → Lambda)                      │
-└────────────────────────────┬────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────┐
-│                  Handler Layer                          │
-│           (CreateBookingHandler.java)                   │
-│         - JSON Deserialization                          │
-│         - Request/Response Mapping                      │
-│         - HTTP Status Code Selection                    │
-└────────────────────────────┬────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────┐
-│                  Service Layer                          │
-│         (BookingService & BookingServiceImpl)            │
-│         - Business Logic & Validation                   │
-│         - Booking Reference Generation                  │
-│         - Domain Rules Enforcement                      │
-└────────────────────────────┬────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────┐
-│              Exception Handling                         │
-│      (GlobalExceptionHandler.java)                      │
-│      - Standardized Error Responses                     │
-│      - Centralized Logging                             │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│  Handler Layer  (Lambda entry point)    │  BookingHandler.java
+│  JSON serialization, HTTP boundary      │  EmployeeHandler.java
+├─────────────────────────────────────────┤
+│  Service Layer  (Business logic)        │  BookingService.java
+│  Validation, rules, orchestration       │  EmployeeService.java
+├─────────────────────────────────────────┤
+│  Repository Layer  (Data access)        │  BookingRepository.java
+│  DynamoDB abstraction                   │  EmployeeRepository.java
+├─────────────────────────────────────────┤
+│  DTO Layer  (Type-safe contracts)       │  BookingRequest/Response
+│  JSON ↔ Java mapping                   │  EmployeeRequest/Response
+├─────────────────────────────────────────┤
+│  Entity Layer  (Domain models)          │  Booking.java
+│                                         │  Employee.java
+└─────────────────────────────────────────┘
 ```
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Version | Reason |
+|---|---|---|---|
+| Runtime | Java | 21 (LTS) | Performance, modern syntax, Lambda-native |
+| Build | Maven | 3.x | Industry standard, CI/CD integration |
+| Serverless | AWS Lambda | Java 21 | Auto-scaling, pay-per-use |
+| API | AWS API Gateway | REST | Request routing, CORS, throttling |
+| Database | AWS DynamoDB | On-demand | Millisecond latency, serverless |
+| IaC | AWS SAM | 2016-10-31 | CloudFormation wrapper for Lambda |
+| CDN | AWS CloudFront | — | HTTPS, edge caching for frontend |
+| JSON | Jackson | 2.15.x | Fast streaming parser |
+| Boilerplate | Lombok | 1.18.x | Reduces getters/setters/builders |
+| Logging | Log4j2 | — | Structured logging, output captured by CloudWatch via Lambda stdout |
+| Testing | JUnit 5 | 5.9 | Unit & integration coverage |
+| Frontend | Vanilla JS / HTML / CSS | — | Zero framework overhead, static deploy |
+
+---
 
 ## Project Structure
 
 ```
-booking-service/
-├── pom.xml                          # Maven configuration
-├── template.yaml                    # AWS SAM template
-├── samconfig.toml                   # SAM deployment config
-├── README.md                        # This file
+corporate-booking/
+├── template.yaml              # AWS SAM / CloudFormation IaC
+├── samconfig.toml             # SAM deployment config (region, stack, S3)
+├── pom.xml                    # Maven build (Java 21, shade plugin)
 │
-└── src/com/techquarter/booking/
-    ├── handler/
-    │   ├── CreateBookingHandler.java        # Lambda entry point
-    │   └── CreateBookingHandlerTest.java    # Integration tests
-    │
-    ├── service/
-    │   ├── BookingService.java              # Service interface
-    │   ├── impl/
-    │   │   └── BookingServiceImpl.java       # Service implementation
-    │   └── BookingServiceTest.java          # Unit tests
-    │
-    ├── dto/
-    │   ├── BookingRequest.java              # Request DTO
-    │   └── BookingResponse.java             # Response DTO
-    │
-    └── exception/
-        └── GlobalExceptionHandler.java      # Error handling
+├── src/
+│   ├── main/java/booking/
+│   │   ├── handler/           # Lambda entry points
+│   │   │   ├── BookingHandler.java
+│   │   │   └── EmployeeHandler.java
+│   │   ├── service/           # Business logic interfaces + impls
+│   │   │   ├── booking/
+│   │   │   └── employee/
+│   │   ├── repository/        # DynamoDB data access
+│   │   │   ├── booking/
+│   │   │   ├── employee/
+│   │   │   └── exception/
+│   │   ├── dto/               # Request / Response DTOs
+│   │   │   ├── BookingRequest.java
+│   │   │   ├── BookingResponse.java
+│   │   │   ├── EmployeeRequest.java
+│   │   │   └── EmployeeResponse.java
+│   │   └── entity/            # Domain model entities
+│   │       ├── Booking.java
+│   │       └── Employee.java
+│   └── test/java/booking/     # JUnit 5 unit + integration tests
+│
+└── frontend/
+    ├── index.html             # Single-page app shell
+    ├── app.js                 # API calls & dynamic rendering
+    ├── styles.css             # Responsive design + dark mode
+    └── assets/                # Logo, icons
 ```
 
-## Technology Stack
+---
 
-| Component | Technology | Version |
-|-----------|-----------|---------|
-| Runtime | Java | 17 |
-| Build Tool | Maven | 3.8.0+ |
-| AWS | Lambda + API Gateway + SAM | Latest |
-| JSON Processing | Jackson | 2.15.2 |
-| Logging | Log4j2 | 2.20.0 |
-| Testing | JUnit 5 | 5.9.3 |
-| Boilerplate Reduction | Lombok | 1.18.30 |
+## API Reference
 
-## Quick Start
+Base URL: `https://{api-id}.execute-api.{region}.amazonaws.com/Prod`
 
-### Prerequisites
+### Bookings
 
-- AWS Account
-- AWS CLI configured
-- AWS SAM CLI v1.0+
-- Java 17 SDK
-- Maven 3.8.0+
-- Docker (for local testing with SAM)
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/bookings` | Create a new booking |
+| `GET` | `/bookings` | List all bookings |
+| `GET` | `/bookings/{id}` | Get booking by reference ID |
+| `PATCH` | `/bookings/{id}/status` | Update booking status |
 
-### Build
+### Employees
 
-```bash
-# Build the project
-mvn clean package
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/employees` | Register a new employee |
+| `GET` | `/employees` | List all employees |
+| `GET` | `/employees/{id}` | Get employee by ID |
+| `PATCH` | `/employees/{id}/status` | Update employee status |
+| `DELETE` | `/employees/{id}` | Delete employee |
 
-# Output: target/booking-service-1.0.0.jar
-```
+---
 
-### Test
+## Data Model
 
-```bash
-# Run all tests
-mvn test
-
-# Run specific test class
-mvn test -Dtest=BookingServiceTest
-mvn test -Dtest=CreateBookingHandlerTest
-```
-
-### Deploy to AWS
-
-```bash
-# Build and deploy using SAM
-sam build
-
-# Deploy to AWS (interactive)
-sam deploy --guided
-
-# Or use samconfig.toml for non-interactive deployment
-sam deploy
-```
-
-### Local Testing
-
-```bash
-# Start SAM local API
-sam local start-api
-
-# Test the endpoint (in another terminal)
-curl -X POST http://localhost:3000/booking \
-  -H "Content-Type: application/json" \
-  -d '{
-    "employeeId": "EMP9876",
-    "resourceType": "Flight",
-    "destination": "NYC",
-    "departureDate": "2024-11-05 08:00:00",
-    "returnDate": "2024-11-08 18:00:00",
-    "travelerCount": 1,
-    "costCenterRef": "CC-456",
-    "tripPurpose": "Client meeting - Acme Corp"
-  }'
-```
-
-## API Documentation
-
-### Create Booking Endpoint
-
-**POST** `/booking`
-
-#### Request Format
+### Create Booking — Request Body
 
 ```json
 {
@@ -175,284 +194,204 @@ curl -X POST http://localhost:3000/booking \
 }
 ```
 
-#### Response Format (Success - HTTP 200)
+### Booking Response
 
 ```json
 {
-  "status": "SUCCESS",
-  "bookingReferenceId": "BKG-550e8400-e29b-41d4-a716-446655440000",
-  "message": "Booking created successfully for employee EMP9876"
-}
-```
-
-#### Response Format (Validation Error - HTTP 400)
-
-```json
-{
-  "status": "VALIDATION_ERROR",
-  "bookingReferenceId": null,
-  "message": "Employee ID is required",
-  "errorCode": "VALIDATION_FAILED",
-  "timestamp": 1630705200000
-}
-```
-
-#### Response Format (System Error - HTTP 500)
-
-```json
-{
-  "status": "SYSTEM_ERROR",
-  "bookingReferenceId": null,
-  "message": "An unexpected error occurred. Please contact support.",
-  "errorCode": "INTERNAL_SERVER_ERROR",
-  "timestamp": 1630705200000
+  "status": "CONFIRMED",
+  "bookingReferenceId": "BKG-a1b2c3d4-...",
+  "message": "Booking successfully created."
 }
 ```
 
 ### Validation Rules
 
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| employeeId | String | Yes | Non-empty |
-| resourceType | String | Yes | "Flight" or "Hotel" |
-| destination | String | Yes | Non-empty |
-| departureDate | String | Yes | Format: `yyyy-MM-dd HH:mm:ss` |
-| returnDate | String | Yes | Format: `yyyy-MM-dd HH:mm:ss`, must be after departure date |
-| travelerCount | Integer | Yes | Minimum: 1 |
-| costCenterRef | String | Yes | Non-empty |
-| tripPurpose | String | Yes | Non-empty |
+| Field | Rule |
+|---|---|
+| `employeeId` | Required, non-blank |
+| `resourceType` | Required — `Flight` or `Hotel` |
+| `destination` | Required, non-blank |
+| `departureDate` | Required, format `yyyy-MM-dd HH:mm:ss` |
+| `returnDate` | Required, format `yyyy-MM-dd HH:mm:ss`, must be after departure |
+| `travelerCount` | Required, ≥ 1 |
+| `costCenterRef` | Required, non-blank |
+| `tripPurpose` | Required, non-blank |
 
-## Performance Optimization
+---
 
-### Cold Start Mitigation
+## Local Development
 
-The following optimizations are implemented to minimize Lambda cold start times:
+### Prerequisites
 
-1. **Minimal Dependencies**: Only essential AWS and Jackson libraries
-2. **JVM Configuration** (in template.yaml):
-   ```yaml
-   JAVA_TOOL_OPTIONS: >
-     -XX:+TieredCompilation
-     -XX:TieredStopAtLevel=1
-     -XX:+UseSerialGC
-     -Xshare:off
-   ```
-3. **512 MB Memory**: Provides sufficient resources for JIT compilation
-4. **Stateless Design**: No connection pooling or initialization overhead
+- Java 21+
+- Maven 3.8+
+- AWS SAM CLI
+- Docker (for local Lambda / DynamoDB)
+- AWS CLI configured
 
-### Achieving 100 TPS
-
-- **API Gateway**: Auto-scales to handle traffic
-- **Lambda**: Concurrent execution limit (default 1000)
-- **Efficient JSON Processing**: Jackson streaming parser
-- **Async Logging**: Log4j2 asynchronous appenders
-
-## Code Quality Standards
-
-### Documentation
-
-- **Comprehensive Javadoc**: Every class and public method documented
-- **Example Usage**: All DTOs include JSON examples
-- **Why Comments**: Implementation comments explain reasoning
-
-### Testing
-
-- **Unit Tests**: `BookingServiceTest.java` (10+ test cases)
-- **Integration Tests**: `CreateBookingHandlerTest.java` (11+ test cases)
-- **Coverage**: Validation logic, error paths, edge cases
-- **Test Organization**: @DisplayName annotations for clarity
-
-### Design Patterns
-
-1. **Service Layer Pattern**: Separation of concerns (Handler → Service)
-2. **DTO Pattern**: Data transfer between layers
-3. **Exception Handler Pattern**: Centralized error handling
-4. **Builder Pattern**: Fluent object construction (via Lombok)
-5. **Strategy Pattern**: Flexible validation logic
-
-## Error Handling Strategy
-
-### Error Types
-
-| Status Code | Scenario | Handler |
-|------------|----------|---------|
-| 200 | Booking created successfully | BookingResponse with SUCCESS |
-| 400 | Invalid JSON or validation failure | GlobalExceptionHandler |
-| 500 | Unexpected system error | GlobalExceptionHandler |
-
-### Logging Strategy
-
-- **INFO**: Successful bookings and key milestones
-- **WARN**: Validation failures
-- **ERROR**: System exceptions with stack traces
-- **DEBUG**: Request/response details
-
-## Deployment
-
-### AWS SAM Commands
+### 1 — Clone & build
 
 ```bash
-# Build for deployment
-sam build
+git clone https://github.com/<your-org>/corporate-booking.git
+cd corporate-booking
+mvn clean package -DskipTests
+```
 
-# Deploy with interactive prompts
+### 2 — Run unit tests
+
+```bash
+mvn test
+```
+
+### 3 — Start local API (SAM)
+
+```bash
+sam local start-api --env-vars env.json
+```
+
+### 4 — Test an endpoint
+
+```bash
+curl -X POST http://localhost:3000/bookings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "employeeId": "EMP001",
+    "resourceType": "Flight",
+    "destination": "NYC",
+    "departureDate": "2025-06-01 08:00:00",
+    "returnDate": "2025-06-05 18:00:00",
+    "travelerCount": 1,
+    "costCenterRef": "CC-100",
+    "tripPurpose": "Q2 planning summit"
+  }'
+```
+
+---
+
+## Build & Deploy
+
+### Build the uber JAR
+
+```bash
+mvn clean package
+# Output: target/corporate-booking-1.0-SNAPSHOT.jar
+```
+
+### Deploy to AWS (guided, first time)
+
+```bash
 sam deploy --guided
+```
 
-# Deploy using samconfig.toml
+### Deploy to AWS (subsequent)
+
+```bash
 sam deploy
-
-# List deployed stack
-aws cloudformation describe-stacks \
-  --stack-name techquarter-booking-service-stack
-
-# View Lambda function logs
-sam logs -n CreateBookingFunction --stack-name techquarter-booking-service-stack
 ```
 
-### Stack Outputs
-
-After deployment, CloudFormation provides:
-
-- **BookingServiceApiEndpoint**: URL to POST booking requests
-- **CreateBookingFunctionName**: Lambda function name
-- **CreateBookingFunctionArn**: Lambda function ARN
-
-## Monitoring
-
-### CloudWatch Metrics
-
-- **Invocations**: Count of Lambda invocations
-- **Duration**: Execution time per request
-- **Errors**: Failed invocations
-- **Throttles**: Rate limit hits
-
-### CloudWatch Logs
-
-- Log Group: `/aws/lambda/techquarter-create-booking`
-- Log Streams: Organized by Lambda version and instance
-
-### X-Ray Tracing
-
-Enable X-Ray in template.yaml:
-```yaml
-TracingConfig:
-  Mode: Active
-```
-
-## Future Enhancements
-
-1. **Database Integration**: Persist bookings to DynamoDB
-2. **Email Notifications**: Send confirmation to employee
-3. **Caching**: Redis for destination validation
-4. **Authentication**: API Key or OAuth2
-5. **Rate Limiting**: Prevent abuse
-6. **Metrics**: Custom CloudWatch metrics
-7. **Scheduled Tasks**: Cleanup expired bookings
-8. **Frontend UI**: React Native mobile app
-
-## Troubleshooting
-
-### Local Testing Issues
+### Deploy frontend to S3
 
 ```bash
-# Ensure SAM is updated
-sam --version
-
-# Clear SAM cache
-rm -rf .aws-sam
-
-# Rebuild
-sam build
+aws s3 sync frontend/ s3://techquarter-booking-frontend-prod-<ACCOUNT_ID>/ --delete
 ```
 
-### Deployment Issues
+CloudFront invalidation (after frontend update):
 
 ```bash
-# Check S3 bucket exists
-aws s3 ls | grep samclisourcebucket
-
-# View stack events
-aws cloudformation describe-stack-events \
-  --stack-name techquarter-booking-service-stack
+aws cloudfront create-invalidation \
+  --distribution-id <DIST_ID> \
+  --paths "/*"
 ```
 
-### Test Failures
+---
+
+## Testing
+
+### Test structure
+
+```
+src/test/java/booking/
+├── handler/
+│   ├── BookingHandlerTest.java       # Integration tests (Lambda handler)
+│   └── EmployeeHandlerTest.java
+└── service/
+    ├── BookingServiceTest.java       # Unit tests (business logic)
+    └── EmployeeServiceTest.java
+```
+
+### Coverage highlights
+
+- **21+ test cases** across unit and integration layers
+- All 8 booking field validations tested explicitly
+- HTTP status codes verified (200, 400, 404, 500)
+- Both `Flight` and `Hotel` resource types covered
+- `MockLambdaContext` for isolated Lambda handler testing
 
 ```bash
-# Run with verbose output
-mvn test -X
+# Run all tests
+mvn test
 
-# Run specific test
-mvn test -Dtest=BookingServiceTest#testCreateBookingSuccess
+# Run a specific test class
+mvn test -Dtest=BookingHandlerTest
 ```
 
-## Contributing
+---
 
-### Code Standards
+## Frontend
 
-- Follow Google Java Style Guide
-- Add Javadoc for all public methods
-- Write tests for all logic
-- Keep methods focused (single responsibility)
+The frontend is a **zero-dependency static SPA** deployed to S3 + CloudFront.
 
-### Pull Request Process
+### Features
 
-1. Create feature branch: `git checkout -b feature/booking-search`
-2. Write tests first (TDD)
-3. Implement feature
-4. Ensure all tests pass: `mvn test`
-5. Submit PR with description
+- Employee registration & management
+- Booking creation form with validation
+- Booking list with status badges
+- Light / Dark mode toggle
+- Fully responsive (mobile-first)
+
+### Local preview
+
+```bash
+cd frontend
+npm run dev          # serves on http://localhost:5500
+```
+
+> Point `app.js` API_BASE_URL to your deployed API Gateway URL before deploying to production.
+
+---
+
+## Design Decisions
+
+### Why AWS Lambda (Serverless)?
+
+- **Auto-scales** from 0 to 100+ TPS without capacity planning
+- **Pay-per-invocation** — zero cost when idle
+- **SnapStart** enabled on both functions to eliminate cold start latency
+- No patching, no fleet management
+
+### Why DynamoDB?
+
+- Single-digit millisecond reads/writes
+- On-demand billing scales with actual traffic
+- Global Secondary Indexes (GSI) on `employeeId` and `email` for fast lookups
+- PITR (Point-in-Time Recovery) enabled for data safety
+
+### Why Clean Architecture?
+
+- **Handler** layer is only aware of HTTP concerns
+- **Service** layer is testable without Lambda or AWS
+- **Repository** layer can be swapped (e.g., in-memory for tests, DynamoDB for production)
+- Each class has a **single reason to change**
+
+### Why Java 21?
+
+- LTS release with long-term AWS Lambda support
+- Virtual threads available for future async improvements
+- Strong typing reduces runtime errors in DTO mapping
+
+---
+
 
 ## License
 
-Copyright © 2024 TechQuarter. All rights reserved.
-
-## Support
-
-For issues or questions:
-- Email: engineering@techquarter.com
-- Slack: #booking-service
-- Wiki: https://wiki.techquarter.com/booking-service
-
-## Appendix: JSON Contract Examples
-
-### Flight Booking Request
-
-```json
-{
-  "employeeId": "EMP9876",
-  "resourceType": "Flight",
-  "destination": "NYC",
-  "departureDate": "2024-11-05 08:00:00",
-  "returnDate": "2024-11-08 18:00:00",
-  "travelerCount": 1,
-  "costCenterRef": "CC-456",
-  "tripPurpose": "Client meeting - Acme Corp"
-}
-```
-
-### Hotel Booking Request
-
-```json
-{
-  "employeeId": "EMP5555",
-  "resourceType": "Hotel",
-  "destination": "London",
-  "departureDate": "2024-12-01 14:00:00",
-  "returnDate": "2024-12-04 11:00:00",
-  "travelerCount": 2,
-  "costCenterRef": "CC-789",
-  "tripPurpose": "Annual conference attendance"
-}
-```
-
-### Success Response Example
-
-```json
-{
-  "status": "SUCCESS",
-  "bookingReferenceId": "BKG-f47ac10b-58cc-4372-a567-0e02b2c3d479",
-  "message": "Booking created successfully for employee EMP9876"
-}
-```
-
+This project is a technical assessment deliverable for **TechQuarter**. All rights reserved.

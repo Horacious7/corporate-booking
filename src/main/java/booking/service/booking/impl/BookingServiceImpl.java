@@ -22,14 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of the BookingService interface that contains
- * the business logic for the full booking lifecycle.
- *
- * <p>Supports: create → confirm → complete, with cancel as terminal state.
- * Uses soft-delete (status = CANCELLED) instead of hard deletion
- * to preserve audit trails for enterprise compliance.
- */
+/// Implementation of the BookingService interface, containing business logic for booking operations.
 public class BookingServiceImpl implements BookingService {
 
     private static final Logger logger = LogManager.getLogger(BookingServiceImpl.class);
@@ -54,25 +47,19 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final EmployeeRepository employeeRepository;
 
-    /**
-     * Default constructor - uses factories for both repositories.
-     */
+    //Default constructor initializes repositories using factory methods
     public BookingServiceImpl() {
         this.bookingRepository = BookingRepositoryFactory.create();
         this.employeeRepository = EmployeeRepositoryFactory.create();
     }
 
-    /**
-     * Constructor for dependency injection with booking repo only (backward compat).
-     */
+    //Constructor for injecting a custom booking repository, good for testing
     public BookingServiceImpl(BookingRepository bookingRepository) {
         this.bookingRepository = bookingRepository;
         this.employeeRepository = EmployeeRepositoryFactory.create();
     }
 
-    /**
-     * Constructor for full dependency injection (useful for testing).
-     */
+    //Constructor for injecting both booking and employee repositories, useful for testing with mocks
     public BookingServiceImpl(BookingRepository bookingRepository, EmployeeRepository employeeRepository) {
         this.bookingRepository = bookingRepository;
         this.employeeRepository = employeeRepository;

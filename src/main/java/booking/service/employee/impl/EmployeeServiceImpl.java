@@ -15,18 +15,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of the EmployeeService interface that contains
- * the business logic for employee registration and management.
- *
- * <p>This service handles:
- * <ul>
- *   <li>Employee registration with validation</li>
- *   <li>Employee lookup by ID, email, and department</li>
- *   <li>Status updates (ACTIVE, INACTIVE)</li>
- *   <li>Employee deletion</li>
- * </ul>
- */
+/// Implementation of the EmployeeService interface, providing business logic for employee operations.
 public class EmployeeServiceImpl implements EmployeeService {
 
     private static final Logger logger = LogManager.getLogger(EmployeeServiceImpl.class);
@@ -42,19 +31,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
 
-    /**
-     * Default constructor - uses EmployeeRepositoryFactory to get the appropriate repository
-     * based on environment configuration (DynamoDB for production, InMemory for testing).
-     */
+    // Default constructor initializes the repository using the factory.
     public EmployeeServiceImpl() {
         this.employeeRepository = EmployeeRepositoryFactory.create();
     }
 
-    /**
-     * Constructor for dependency injection (useful for testing).
-     *
-     * @param employeeRepository The repository to use for persistence
-     */
+    // Constructor for dependency injection, good for tests
     public EmployeeServiceImpl(EmployeeRepository employeeRepository) {
         this.employeeRepository = employeeRepository;
     }
@@ -276,9 +258,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     // ==================== Private Helper Methods ====================
 
-    /**
-     * Builds a full success response from an Employee entity.
-     */
+    //Builds a standard success response
     private EmployeeResponse buildSuccessResponse(Employee employee, String message) {
         return EmployeeResponse.builder()
                 .status(STATUS_SUCCESS)
@@ -292,9 +272,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
     }
 
-    /**
-     * Validates that all required fields in the employee request are present and valid.
-     */
+
     private void validateEmployeeRequest(EmployeeRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Employee request cannot be null");
@@ -325,18 +303,13 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
     }
 
-    /**
-     * Validates if the given status is an allowed value.
-     */
     private boolean isValidStatus(String status) {
         if (status == null) return false;
         String upper = status.toUpperCase();
         return "ACTIVE".equals(upper) || "INACTIVE".equals(upper) || "SUSPENDED".equals(upper);
     }
 
-    /**
-     * Builds a standardized error response with the given status and message.
-     */
+    //Builds a standard error response
     private EmployeeResponse buildErrorResponse(String status, String employeeId, String message) {
         return EmployeeResponse.builder()
                 .status(status)
@@ -345,9 +318,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
     }
 
-    /**
-     * Check if a string is null or empty after trimming whitespace.
-     */
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
     }
