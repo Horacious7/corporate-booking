@@ -1,19 +1,68 @@
 /**
  * TechQuarter Corporate Booking - Frontend Application
  *
- * Vanilla JS single-page app for testing the booking & employee APIs.
- * Talks to the API Gateway (or SAM local) endpoints.
+ * Vanilla JS single-page app for the booking & employee APIs.
+ * Talks to the API Gateway endpoints.
  */
 
 // ==================== Configuration ====================
 
-const DEFAULT_LOCAL_URL = 'http://127.0.0.1:3000';
-let API_BASE_URL = localStorage.getItem('apiBaseUrl') || '';
+// Production API URL (from SAM deploy output)
+const API_BASE_URL = 'https://eoufh9djsk.execute-api.eu-central-1.amazonaws.com/Prod';
 
-// Populate the settings input on load
+// For local development, uncomment below and comment out the line above:
+// const API_BASE_URL = 'http://127.0.0.1:3000';
+
+// ==================== Theme Toggle ====================
+
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+    }
+    updateThemeIcon();
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+    updateThemeIcon();
+}
+
+function updateThemeIcon() {
+    const theme = document.documentElement.getAttribute('data-theme');
+    const iconEl = document.getElementById('themeIcon');
+    const btn = document.getElementById('themeToggleBtn');
+
+    if (theme === 'dark') {
+        // Show sun icon in dark mode
+        iconEl.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3V4M12 20V21M4 12H3M6.31412 6.31412L5.5 5.5M17.6859 6.31412L18.5 5.5M6.31412 17.69L5.5 18.5001M17.6859 17.69L18.5 18.5001M21 12H20M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+        btn.title = 'Switch to light mode';
+    } else {
+        // Show moon icon in light mode
+        iconEl.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 6V3M18.5 12V7M14.5 4.5H11.5M21 9.5H16M15.5548 16.8151C16.7829 16.8151 17.9493 16.5506 19 16.0754C17.6867 18.9794 14.7642 21 11.3698 21C6.74731 21 3 17.2527 3 12.6302C3 9.23576 5.02061 6.31331 7.92462 5C7.44944 6.05072 7.18492 7.21708 7.18492 8.44523C7.18492 13.0678 10.9322 16.8151 15.5548 16.8151Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+        btn.title = 'Switch to dark mode';
+    }
+}
+
+// ==================== Init ====================
+
 document.addEventListener('DOMContentLoaded', () => {
-    const apiInput = document.getElementById('apiBaseUrl');
-    if (apiInput) apiInput.value = API_BASE_URL;
+    // Initialize theme
+    initTheme();
+
+    // Theme toggle button
+    document.getElementById('themeToggleBtn').addEventListener('click', toggleTheme);
 
     // Dynamic booking form based on resource type
     const resourceSelect = document.getElementById('bookResourceType');
@@ -102,43 +151,6 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         document.getElementById(btn.dataset.tab).classList.add('active');
     });
 });
-
-// ==================== Settings ====================
-
-function saveApiUrl() {
-    const url = document.getElementById('apiBaseUrl').value.trim().replace(/\/+$/, '');
-    API_BASE_URL = url;
-    localStorage.setItem('apiBaseUrl', url);
-    showResult('settingsResult', 'success', `✅ API URL saved: ${url || '(empty)'}`);
-}
-
-function useLocalUrl() {
-    document.getElementById('apiBaseUrl').value = DEFAULT_LOCAL_URL;
-    API_BASE_URL = DEFAULT_LOCAL_URL;
-    localStorage.setItem('apiBaseUrl', DEFAULT_LOCAL_URL);
-    showResult('settingsResult', 'success', `✅ Using local URL: ${DEFAULT_LOCAL_URL}`);
-}
-
-async function healthCheck() {
-    const resultDiv = document.getElementById('healthCheckResult');
-    showResult('healthCheckResult', 'info', '<span class="loading"></span> Testing connection...');
-
-    try {
-        // Try fetching employees with a dummy query - even a 400 means the API is reachable
-        const response = await fetch(`${API_BASE_URL}/employees?department=test`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (response.ok || response.status === 400) {
-            showResult('healthCheckResult', 'success', `✅ API is reachable! Status: ${response.status}`);
-        } else {
-            showResult('healthCheckResult', 'error', `⚠️ API responded with status: ${response.status}`);
-        }
-    } catch (err) {
-        showResult('healthCheckResult', 'error', `❌ Connection failed: ${err.message}<br><small>Make sure the API URL is correct and CORS is enabled.</small>`);
-    }
-}
 
 // ==================== Employee Operations ====================
 
@@ -438,10 +450,6 @@ async function updateBookingStatus() {
 // ==================== API Helper ====================
 
 async function apiCall(method, path, body = null) {
-    if (!API_BASE_URL) {
-        throw new Error('API URL not configured. Go to Settings tab and set it.');
-    }
-
     const url = `${API_BASE_URL}${path}`;
     const options = {
         method,
@@ -476,7 +484,7 @@ function formatEmployee(emp) {
                            emp.employeeStatus === 'INACTIVE' ? 'error' : 'info';
     return `
         <div class="result-item">
-            <span class="status-badge success">✓ ${emp.employeeStatus || 'N/A'}</span>
+            <span class="status-badge ${empStatusClass}">✓ ${emp.employeeStatus || 'N/A'}</span>
             <br><span class="label">Employee ID:</span> <span class="value">${emp.employeeId || 'N/A'}</span>
             <br><span class="label">Name:</span> <span class="value">${emp.name || 'N/A'}</span>
             <br><span class="label">Email:</span> <span class="value">${emp.email || 'N/A'}</span>
@@ -492,7 +500,7 @@ function formatEmployeeSummary(emp) {
         <div class="result-item" style="padding: 6px 10px;">
             <span class="status-badge ${empStatusClass}" style="font-size:0.7em">${emp.employeeStatus || '?'}</span>
             <strong>${emp.employeeId}</strong> — ${emp.name || 'N/A'}
-            <span style="color:#888; margin-left:8px;">${emp.department || ''}</span>
+            <span style="color:var(--text-light); margin-left:8px;">${emp.department || ''}</span>
         </div>`;
 }
 
@@ -516,7 +524,7 @@ function formatBookingSummary(booking) {
     return `
         <div class="result-item" style="padding: 6px 10px;">
             <strong>${booking.bookingReferenceId}</strong>
-            <span style="color:#888; margin-left:8px;">${booking.message || ''}</span>
+            <span style="color:var(--text-light); margin-left:8px;">${booking.message || ''}</span>
         </div>`;
 }
 
@@ -527,4 +535,3 @@ function showResult(elementId, type, html) {
     el.className = `result-box ${type}`;
     el.innerHTML = html;
 }
-

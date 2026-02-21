@@ -1,23 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechQuarter Corporate Booking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
         <div class="header-content">
-            <h1>🏢 TechQuarter Corporate Booking</h1>
-            <p class="subtitle">Enterprise Travel & Resource Management</p>
+            <div class="logo-container">
+                <img src="assets/logo.png" alt="TechQuarter Logo" class="app-logo">
+            </div>
+
+            <div class="header-center">
+                <h1>TechQuarter</h1>
+                <p class="subtitle"><em>Enterprise Travel & Resource Management</em></p>
+            </div>
+
+            <div class="theme-toggle-container">
+                <button id="themeToggleBtn" class="theme-toggle-btn" title="Switch to dark mode">
+                    <span class="icon" id="themeIcon">
+                        <!-- Moon icon (shown in light mode) -->
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M13 6V3M18.5 12V7M14.5 4.5H11.5M21 9.5H16M15.5548 16.8151C16.7829 16.8151 17.9493 16.5506 19 16.0754C17.6867 18.9794 14.7642 21 11.3698 21C6.74731 21 3 17.2527 3 12.6302C3 9.23576 5.02061 6.31331 7.92462 5C7.44944 6.05072 7.18492 7.21708 7.18492 8.44523C7.18492 13.0678 10.9322 16.8151 15.5548 16.8151Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </button>
+            </div>
         </div>
     </header>
 
     <nav>
-        <button class="nav-btn active" data-tab="employees">👤 Employees</button>
-        <button class="nav-btn" data-tab="bookings">✈️ Bookings</button>
-        <button class="nav-btn" data-tab="settings">⚙️ Settings</button>
+        <div class="nav-tabs">
+            <button class="nav-btn active" data-tab="employees">
+                <span class="icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                Employees
+            </button>
+            <button class="nav-btn" data-tab="bookings">
+                <span class="icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 10H21M7 3V5M17 3V5M6 21H18C19.6569 21 21 19.6569 21 18V8C21 6.34315 19.6569 5 18 5H6C4.34315 5 3 6.34315 3 8V18C3 19.6569 4.34315 21 6 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                Bookings
+            </button>
+        </div>
     </nav>
 
     <main>
@@ -68,7 +104,7 @@
 
                     <!-- By ID -->
                     <div class="search-section">
-                        <h3>🔍 By Employee ID</h3>
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> By Employee ID</h3>
                         <div class="inline-form">
                             <input type="text" id="searchEmpId" placeholder="Employee ID...">
                             <button class="btn btn-secondary" onclick="searchEmployeeById()">Search</button>
@@ -77,7 +113,7 @@
 
                     <!-- By Email -->
                     <div class="search-section">
-                        <h3>📧 By Email</h3>
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7L10.94 11.3375C11.5885 11.7428 12.4115 11.7428 13.06 11.3375L20 7M5 18H19C20.1046 18 21 17.1046 21 16V8C21 6.89543 20.1046 6 19 6H5C3.89543 6 3 6.89543 3 8V16C3 17.1046 3.89543 18 5 18Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> By Email</h3>
                         <div class="inline-form">
                             <input type="text" id="searchEmpEmail" placeholder="Email...">
                             <button class="btn btn-secondary" onclick="searchEmployeesByEmail()">Search</button>
@@ -86,7 +122,7 @@
 
                     <!-- By Department -->
                     <div class="search-section">
-                        <h3>🏢 By Department</h3>
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M19 21V5C19 3.89543 18.1046 3 17 3H7C5.89543 3 5 3.89543 5 5V21M19 21H21M19 21H14M5 21H3M5 21H10M9 7H10M9 11H10M14 7H15M14 11H15M10 21V16C10 15.4477 10.4477 15 11 15H13C13.5523 15 14 15.4477 14 16V21M10 21H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> By Department</h3>
                         <div class="inline-form">
                             <select id="searchEmpDept">
                                 <option value="">Select department...</option>
@@ -104,7 +140,7 @@
 
                     <!-- List All -->
                     <div class="search-section">
-                        <h3>📋 All Employees</h3>
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 6H21M8 12H21M8 18H21M3 6H3.01M3 12H3.01M3 18H3.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> All Employees</h3>
                         <button class="btn btn-secondary" onclick="listAllEmployees()">List All</button>
                     </div>
 
@@ -117,7 +153,7 @@
 
                     <!-- Update Status -->
                     <div class="search-section">
-                        <h3>🔄 Update Status</h3>
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12C4 7.58172 7.58172 4 12 4M20 12C20 16.4183 16.4183 20 12 20M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Update Status</h3>
                         <div class="form-group">
                             <label for="statusEmpId">Employee ID</label>
                             <input type="text" id="statusEmpId" placeholder="Employee ID...">
@@ -135,7 +171,7 @@
 
                     <!-- Delete -->
                     <div class="search-section">
-                        <h3>🗑️ Delete Employee</h3>
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M18 6L17.1991 18.0129C17.129 19.065 17.0939 19.5911 16.8667 19.99C16.6666 20.3412 16.3648 20.6235 16.0011 20.7998C15.588 21 15.0607 21 14.0062 21H9.99377C8.93927 21 8.41202 21 7.99889 20.7998C7.63517 20.6235 7.33339 20.3412 7.13332 19.99C6.90607 19.5911 6.871 19.065 6.80086 18.0129L6 6M4 6H20M16 6L15.7294 5.18807C15.4671 4.40125 15.3359 4.00784 15.0927 3.71698C14.8779 3.46013 14.6021 3.26132 14.2905 3.13878C13.9376 3 13.523 3 12.6936 3H11.3064C10.477 3 10.0624 3 9.70951 3.13878C9.39792 3.26132 9.12208 3.46013 8.90729 3.71698C8.66405 4.00784 8.53292 4.40125 8.27064 5.18807L8 6M14 10V17M10 10V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Delete Employee</h3>
                         <div class="inline-form">
                             <input type="text" id="deleteEmpId" placeholder="Employee ID...">
                             <button class="btn btn-danger" onclick="deleteEmployee()">Delete</button>
@@ -207,7 +243,7 @@
 
                     <!-- By Reference ID -->
                     <div class="search-section">
-                        <h3>🔍 By Booking Reference</h3>
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> By Booking Reference</h3>
                         <div class="inline-form">
                             <input type="text" id="searchBookingRef" placeholder="Booking reference ID...">
                             <button class="btn btn-secondary" onclick="searchBookingByRef()">Search</button>
@@ -216,7 +252,7 @@
 
                     <!-- By Employee ID -->
                     <div class="search-section">
-                        <h3>👤 By Employee ID</h3>
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> By Employee ID</h3>
                         <div class="inline-form">
                             <input type="text" id="searchBookingEmpId" placeholder="Employee ID...">
                             <button class="btn btn-secondary" onclick="searchBookingsByEmployee()">Search</button>
@@ -225,61 +261,45 @@
 
                     <!-- List All -->
                     <div class="search-section">
-                        <h3>📋 All Bookings</h3>
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 6H21M8 12H21M8 18H21M3 6H3.01M3 12H3.01M3 18H3.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> All Bookings</h3>
                         <button class="btn btn-secondary" onclick="listAllBookings()">List All</button>
                     </div>
 
                     <div id="searchBookingResult" class="result-box"></div>
                 </div>
 
-                <!-- Update Booking Status -->
+                <!-- Manage Bookings -->
                 <div class="card">
-                    <h2>Update Booking Status</h2>
-                    <div class="form-group">
-                        <label for="updateBookingRef">Booking Reference ID</label>
-                        <input type="text" id="updateBookingRef" placeholder="Booking reference ID...">
+                    <h2>Manage Bookings</h2>
+
+                    <!-- Update Status -->
+                    <div class="search-section">
+                        <h3><span class="icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12C4 7.58172 7.58172 4 12 4M20 12C20 16.4183 16.4183 20 12 20M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Update Status</h3>
+                        <div class="form-group">
+                            <label for="updateBookingRef">Booking Reference ID</label>
+                            <input type="text" id="updateBookingRef" placeholder="Booking reference ID...">
+                        </div>
+                        <div class="form-group">
+                            <label for="bookNewStatus">New Status</label>
+                            <select id="bookNewStatus">
+                                <option value="CONFIRMED">CONFIRMED</option>
+                                <option value="CANCELLED">CANCELLED</option>
+                                <option value="COMPLETED">COMPLETED</option>
+                                <option value="PENDING">PENDING</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-warning" onclick="updateBookingStatus()">Update Status</button>
                     </div>
-                    <div class="form-group">
-                        <label for="bookNewStatus">New Status</label>
-                        <select id="bookNewStatus">
-                            <option value="CONFIRMED">CONFIRMED</option>
-                            <option value="CANCELLED">CANCELLED</option>
-                            <option value="COMPLETED">COMPLETED</option>
-                            <option value="PENDING">PENDING</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-warning" onclick="updateBookingStatus()">Update Status</button>
+
                     <div id="updateBookingResult" class="result-box"></div>
                 </div>
-            </div>
-        </section>
-
-        <!-- ==================== SETTINGS TAB ==================== -->
-        <section id="settings" class="tab-content">
-            <div class="card" style="max-width: 600px;">
-                <h2>⚙️ API Configuration</h2>
-                <p class="hint">Set the API Gateway base URL. After deploying with SAM, copy the <code>ApiBaseUrl</code> output here.</p>
-                <div class="form-group">
-                    <label for="apiBaseUrl">API Base URL</label>
-                    <input type="text" id="apiBaseUrl" placeholder="https://xxxxxxxxxx.execute-api.eu-central-1.amazonaws.com/Prod">
-                </div>
-                <div class="btn-row">
-                    <button class="btn btn-primary" onclick="saveApiUrl()">💾 Save</button>
-                    <button class="btn btn-secondary" onclick="useLocalUrl()">🖥️ Use Local (SAM Local)</button>
-                </div>
-                <div id="settingsResult" class="result-box"></div>
-
-                <hr>
-                <h3>Quick Health Check</h3>
-                <p class="hint">Test connectivity by trying to fetch employees.</p>
-                <button class="btn btn-secondary" onclick="healthCheck()">🩺 Test Connection</button>
-                <div id="healthCheckResult" class="result-box"></div>
             </div>
         </section>
     </main>
 
     <footer>
         <p>TechQuarter Corporate Booking Tool &copy; 2026 | Powered by AWS Lambda + DynamoDB</p>
+        <p>All Rights Reserved</p>
     </footer>
 
     <script src="app.js"></script>
